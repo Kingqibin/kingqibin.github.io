@@ -1,0 +1,711 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Kingqibin">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="问题的发现是本人在进行lab3实验时，有memset失败而进一步探索的结果，如果你的lab2成功pass，不代表不会存在以下问题，另外，与你的狗屎运也有点儿关系。背景：lab3中的env.c文件已经填完了，发现boot_alloc存在问题，以下代码展示均在branch lab3下进行。  上案发现场： 12345678910111213141516171819202122232425262728">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MITJOS Lab2中关于boot_alloc初始化问题引发的memset问题">
+<meta property="og:url" content="https://kingqibin.github.io/2022/04/19/MITJOS-Lab2%E4%B8%AD%E5%85%B3%E4%BA%8Eboot-alloc%E5%88%9D%E5%A7%8B%E5%8C%96%E9%97%AE%E9%A2%98%E5%BC%95%E5%8F%91%E7%9A%84memset%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Kingqibin&#39;s Blog">
+<meta property="og:description" content="问题的发现是本人在进行lab3实验时，有memset失败而进一步探索的结果，如果你的lab2成功pass，不代表不会存在以下问题，另外，与你的狗屎运也有点儿关系。背景：lab3中的env.c文件已经填完了，发现boot_alloc存在问题，以下代码展示均在branch lab3下进行。  上案发现场： 12345678910111213141516171819202122232425262728">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020030823111179.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200308232211920.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200308232045292.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020030823313780.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200308233459137.png">
+<meta property="article:published_time" content="2022-04-19T10:13:13.000Z">
+<meta property="article:modified_time" content="2022-04-19T10:15:54.530Z">
+<meta property="article:author" content="Kingqibin">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/2020030823111179.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70">
+  
+  
+  <title>MITJOS Lab2中关于boot_alloc初始化问题引发的memset问题 - Kingqibin&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"kingqibin.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","app_key":"pkqNUo6eK3tLqxIQKHTgFA78","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Kingqibin&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MITJOS Lab2中关于boot_alloc初始化问题引发的memset问题"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-19 18:13" pubdate>
+          2022年4月19日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">MITJOS Lab2中关于boot_alloc初始化问题引发的memset问题</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    本文最后更新于：2022年4月19日 晚上
+                  
+                
+              </p>
+            
+            <div class="markdown-body">
+              
+              <blockquote>
+<p>问题的发现是本人在进行lab3实验时，有memset失败而进一步探索的结果，如果你的lab2成功pass，不代表不会存在以下问题，另外，与你的狗屎运也有点儿关系。<br>背景：lab3中的env.c文件已经填完了，发现boot_alloc存在问题，以下代码展示均在branch lab3下进行。</p>
+</blockquote>
+<p>上案发现场：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// This simple physical memory allocator is used only while JOS is setting</span><br><span class="hljs-comment">// up its virtual memory system.  page_alloc() is the real allocator.</span><br><span class="hljs-comment">//</span><br><span class="hljs-comment">// If n&gt;0, allocates enough pages of contiguous physical memory to hold &#x27;n&#x27;</span><br><span class="hljs-comment">// bytes.  Doesn&#x27;t initialize the memory.  Returns a kernel virtual address.</span><br><span class="hljs-comment">//</span><br><span class="hljs-comment">// If n==0, returns the address of the next free page without allocating</span><br><span class="hljs-comment">// anything.</span><br><span class="hljs-comment">//</span><br><span class="hljs-comment">// If we&#x27;re out of memory, boot_alloc should panic.</span><br><span class="hljs-comment">// This function may ONLY be used during initialization,</span><br><span class="hljs-comment">// before the page_free_list list has been set up.</span><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> *<br><span class="hljs-title function_">boot_alloc</span><span class="hljs-params">(<span class="hljs-type">uint32_t</span> n)</span><br>&#123;<br>	<span class="hljs-type">static</span> <span class="hljs-type">char</span> *nextfree;	<span class="hljs-comment">// virtual address of next byte of free memory</span><br>	<span class="hljs-type">char</span> *result;<br><br>	<span class="hljs-comment">// Initialize nextfree if this is the first time.</span><br>	<span class="hljs-comment">// &#x27;end&#x27; is a magic symbol automatically generated by the linker,</span><br>	<span class="hljs-comment">// which points to the end of the kernel&#x27;s bss segment:</span><br>	<span class="hljs-comment">// the first virtual address that the linker did *not* assign</span><br>	<span class="hljs-comment">// to any kernel code or global variables.</span><br>	<span class="hljs-keyword">if</span> (!nextfree) &#123;<br>		<span class="hljs-keyword">extern</span> <span class="hljs-type">char</span> end[];<br>		nextfree = ROUNDUP((<span class="hljs-type">char</span> *) end, PGSIZE);<br>	&#125;<br><br>	<span class="hljs-comment">// Allocate a chunk large enough to hold &#x27;n&#x27; bytes, then update</span><br>	<span class="hljs-comment">// nextfree.  Make sure nextfree is kept aligned</span><br>	<span class="hljs-comment">// to a multiple of PGSIZE.</span><br>	<span class="hljs-comment">//</span><br>	<span class="hljs-comment">// LAB 2: Your code here.</span><br>	result = nextfree;<br>	<span class="hljs-comment">// be kept aligned to a multiple of PGSIZE</span><br>	nextfree = ROUNDUP(nextfree + n, PGSIZE);<br>	<span class="hljs-keyword">if</span> ((<span class="hljs-type">unsigned</span>)nextfree - KERNBASE &gt; (npages * PGSIZE)) <span class="hljs-comment">// npages * PGSIZE = totalmem</span><br>	&#123;	<span class="hljs-comment">// since npages count from KERNBASE then when compare it should use KERNBASE</span><br>		panic(<span class="hljs-string">&quot;out of memory in boot_alloc\n&quot;</span>);<br>	&#125;<br><br>	<span class="hljs-keyword">return</span> result;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>命案现场并不是让我们自己填写的部分，而是系统默认给出的这一部分：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// Initialize nextfree if this is the first time.</span><br><span class="hljs-comment">// &#x27;end&#x27; is a magic symbol automatically generated by the linker,</span><br><span class="hljs-comment">// which points to the end of the kernel&#x27;s bss segment:</span><br><span class="hljs-comment">// the first virtual address that the linker did *not* assign</span><br><span class="hljs-comment">// to any kernel code or global variables.</span><br><span class="hljs-keyword">if</span> (!nextfree) &#123;<br>	<span class="hljs-keyword">extern</span> <span class="hljs-type">char</span> end[];<br>	nextfree = ROUNDUP((<span class="hljs-type">char</span> *) end, PGSIZE);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>首先分析它这一部分注释的问题，它说end变量是bss段中对后一个变量，如果它说的是正确的，那么我们可以使用end作为bss段的末尾，同时在roundup的作用下可以保证nextfree是绝对在bss段后面，而且是可以对4K取整的。<br>但是问题是，它说的“end是bss段的末尾”是不是正确的呢？那就瞅一瞅。<br>首先，查看下ELF中对各个段的定义</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">objdump -h obj/kern/kernel<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/2020030823111179.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>上面是我的结果，先不用管具体的虚拟地址（我的是在lab3下，可能因人而异），看到bss段的虚拟地址是0xf0182100，段的大小为0xf14，那么计算下可知bss的范围为[0xf0182100, 0xf0183014) ，之后呢，我们使用gdb看一下，这个end的具体地址：<br>在mem_init中，第一次调用boot_alloc是在开辟页目录内存的位置，也就是下面的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">kern_pgdir = (<span class="hljs-type">pde_t</span> *) boot_alloc(PGSIZE);<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20200308232211920.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>我们使用gdb跳转到上面代码的位置，然后进入boot_alloc的体内，再调到if判断的地方，si进入，可以明显的看到，end的地址是0xf0183000。<br><img src="https://img-blog.csdnimg.cn/20200308232045292.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>这时候有人会觉得，哎，这不是很正常吗，end是一个数组，所以后面还有20个元素？那继续往后看：<br>通过查阅代码我们可以知道，kern_pgdir也是一个全局变量，而且也没有进行初始化，那么他一定是在bss段中的。<br>在第一次boot_alloc处作一下更改：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//////////////////////////////////////////////////////////////////////</span><br><span class="hljs-comment">// create initial page directory. !!!!!!!!!!!!!</span><br>kern_pgdir = (<span class="hljs-type">pde_t</span> *) boot_alloc(PGSIZE);<br>cprintf(<span class="hljs-string">&quot;%x\n&quot;</span>, &amp;kern_pgdir);<br><span class="hljs-built_in">memset</span>(kern_pgdir, <span class="hljs-number">0</span>, PGSIZE);<br></code></pre></td></tr></table></figure>
+
+<p>打印下信息<br>看结果：<br><img src="https://img-blog.csdnimg.cn/2020030823313780.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>没错，你没有看错，kern_pgdir所在的内存地址为0xf018300c。进一步验证下，使用以下的命令来查看全部表头信息：（这里输出到文件，好定位）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">objdump -x obj/kern/kernel  &gt; ~/work/test<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20200308233459137.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>除了kern_pgdir外，还有好多变量都是在end之后的，比如panicstr、npages。<br>然后说一下，这样就会导致一个什么样的问题：<br>以我遇到的问题为例，我的end所在的地址为0xf0183000，因此我通过</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">nextfree = ROUNDUP((<span class="hljs-type">char</span> *) end, PGSIZE);<br></code></pre></td></tr></table></figure>
+
+<p>获取到的result（也就是kern_pgdir）的值为0xf0183000（jtm离谱），也就是说kern_pgdir（0xf018300c）所指向的地址为0xf0183000，在之后的memset中，显然，会将期自身清空，导致，memset运行完后，kern_pgdir自身的值为0了，导致了后面一系列的错误。<br>进一步分析可知，原文中说的magic，其实一点儿都不magic，而是存在一定的问题，但是我觉得这个可能也跟编译器的编译顺序有关吧，就没有再深入的研究下，如果kern_pgdir等变量的存放地址在end之前的话就不会存在这个问题，或者说，如果你的end经过roundup之后，与nextfree之间有很大的gap，足以保存下其余的变量的话，也不会出现问题，当然这与你的运气有关。<br>明白了之后，直接上简单粗暴的解决方案：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// Initialize nextfree if this is the first time.</span><br>	<span class="hljs-comment">// &#x27;end&#x27; is a magic symbol automatically generated by the linker,</span><br>	<span class="hljs-comment">// which points to the end of the kernel&#x27;s bss segment:</span><br>	<span class="hljs-comment">// the first virtual address that the linker did *not* assign</span><br>	<span class="hljs-comment">// to any kernel code or global variables.</span><br>	<span class="hljs-keyword">if</span> (!nextfree) &#123;<br>		<span class="hljs-keyword">extern</span> <span class="hljs-type">char</span> end[];<br>		nextfree = ROUNDUP((<span class="hljs-type">char</span> *) end, PGSIZE) + PGSIZE;<br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<p>即nextfree在初始化的时候加上个PGSIZE，虽然这样不会根治这个问题，当end后面的变量继续边多，直到后面变量占用的内存达到了4K，那么这里还是会出错。但是就目前而言，是足够了吧。如果有更好的解决方案欢迎在评论取留言，希望我的经验能够对看到这里的你有一点帮助。</p>
+<hr>
+<p>如有错误，欢迎指正。</p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MITJOS Lab2中关于boot_alloc初始化问题引发的memset问题</div>
+      <div>https://kingqibin.github.io/2022/04/19/MITJOS-Lab2中关于boot-alloc初始化问题引发的memset问题/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Kingqibin</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年4月19日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/04/19/Django%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8EApp-Android-%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/" title="Django服务器与App(Android)客户端的简单实现">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Django服务器与App(Android)客户端的简单实现</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/04/19/%E5%85%B3%E4%BA%8E%E6%88%91%E6%83%B3%E5%9C%A8windows%E4%B8%8A%E7%BC%96%E8%AF%91colmap%E8%BF%99%E4%BB%B6%E4%BA%8B/" title="关于我想在windows上编译colmap这件事">
+                        <span class="hidden-mobile">关于我想在windows上编译colmap这件事</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","appKey":"pkqNUo6eK3tLqxIQKHTgFA78","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Kingqibin">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文记录了一些简单的JGit使用方法，同时基于JGit，设想搭建了一个可以实现一些简单的服务器通讯，将数据自动上传到Git服务器，白嫖一些远程的数据库。可以在以后的一些简单项目中，比如记账软件，进行集成。 同时这也是本人第一次接触maven，也当作学习笔记了。 同步blog：https:&#x2F;&#x2F;kingqibin.github.io&#x2F; 环境   软件 版本    jdk v13.0.2   maven">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JGit学习以及基于JGit搭建一个简单的web库">
+<meta property="og:url" content="https://kingqibin.github.io/2022/04/19/JGit%E5%AD%A6%E4%B9%A0%E4%BB%A5%E5%8F%8A%E5%9F%BA%E4%BA%8EJGit%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84web%E5%BA%93/index.html">
+<meta property="og:site_name" content="Kingqibin&#39;s Blog">
+<meta property="og:description" content="本文记录了一些简单的JGit使用方法，同时基于JGit，设想搭建了一个可以实现一些简单的服务器通讯，将数据自动上传到Git服务器，白嫖一些远程的数据库。可以在以后的一些简单项目中，比如记账软件，进行集成。 同时这也是本人第一次接触maven，也当作学习笔记了。 同步blog：https:&#x2F;&#x2F;kingqibin.github.io&#x2F; 环境   软件 版本    jdk v13.0.2   maven">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/a190a9b6c8e358d0bcec860f0a934b93.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/0c393eab7bf961b201a9142d27010c8e.png">
+<meta property="article:published_time" content="2022-04-19T10:11:49.000Z">
+<meta property="article:modified_time" content="2022-04-19T10:12:11.912Z">
+<meta property="article:author" content="Kingqibin">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/img_convert/a190a9b6c8e358d0bcec860f0a934b93.png">
+  
+  
+  <title>JGit学习以及基于JGit搭建一个简单的web库 - Kingqibin&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"kingqibin.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","app_key":"pkqNUo6eK3tLqxIQKHTgFA78","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Kingqibin&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="JGit学习以及基于JGit搭建一个简单的web库"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-19 18:11" pubdate>
+          2022年4月19日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">JGit学习以及基于JGit搭建一个简单的web库</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    本文最后更新于：2022年4月19日 晚上
+                  
+                
+              </p>
+            
+            <div class="markdown-body">
+              
+              <p>本文记录了一些简单的JGit使用方法，同时基于JGit，设想搭建了一个可以实现一些简单的服务器通讯，将数据自动上传到Git服务器，白嫖一些远程的数据库。可以在以后的一些简单项目中，比如记账软件，进行集成。</p>
+<p>同时这也是本人第一次接触maven，也当作学习笔记了。</p>
+<p>同步blog：<a href="https://kingqibin.github.io/">https://kingqibin.github.io/</a></p>
+<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><table>
+<thead>
+<tr>
+<th align="center">软件</th>
+<th align="left">版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">jdk</td>
+<td align="left">v13.0.2</td>
+</tr>
+<tr>
+<td align="center">maven</td>
+<td align="left">v3.8.1</td>
+</tr>
+<tr>
+<td align="center">intellij idea</td>
+<td align="left">community 2020.3</td>
+</tr>
+</tbody></table>
+<h2 id="创建maven项目"><a href="#创建maven项目" class="headerlink" title="创建maven项目"></a>创建maven项目</h2><p>使用idea进行创建，这里使用空项目创建<br><img src="https://img-blog.csdnimg.cn/img_convert/a190a9b6c8e358d0bcec860f0a934b93.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/0c393eab7bf961b201a9142d27010c8e.png" srcset="/img/loading.gif" lazyload></p>
+<p>我这边是这样创建的，也不是很清楚具体的maven项目到底是怎么样的，目前来说就这样算了，等后面再学习下吧</p>
+<p>PS：在创建项目之前，最好把一些maven的配置给配好，比如国内镜像之类，我自己在用的时候即使改了setting，但是也会遇到intellij idea无法加载新配置的情况，依然用的是原先的配置，遇到这种情况就把项目创建的默认设置改一下，然后删库重新创建下就好了</p>
+<h2 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span><br>    <span class="hljs-comment">&lt;!-- 导入JGit库 --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.eclipse.jgit<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>org.eclipse.jgit<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>5.2.1.201812262042-r<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br>    <span class="hljs-comment">&lt;!-- 这里需要绑定一个简单实现的slf4j否则会提示没有实现的错误 --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.slf4j<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>slf4j-simple<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.6.4<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br>    <span class="hljs-comment">&lt;!-- 文件IO操作的一个库 --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.commons<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>commons-io<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.3.2<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br>    <span class="hljs-comment">&lt;!-- json读取与解析 --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.json<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>json<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>20201115<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>maven小知识：引入dependency时要先用<code>&lt;dependencies&gt;&lt;/dependencies&gt;</code>标签引用起来</p>
+<h2 id="JGitWebSync设计"><a href="#JGitWebSync设计" class="headerlink" title="JGitWebSync设计"></a>JGitWebSync设计</h2><p>目前阶段考虑到需要的功能有</p>
+<ul>
+<li>clone远程库</li>
+<li>加载本地库</li>
+<li>添加修改文件</li>
+<li>删除文件</li>
+<li>仓库push来实现文件的提交</li>
+<li>仓库pull来实现文件的同步</li>
+</ul>
+<p>在实现时主要参考<a target="_blank" rel="noopener" href="https://www.cnblogs.com/xiaoqi/p/jgit.html">blog</a></p>
+<h3 id="0-ssh实现权限访问"><a href="#0-ssh实现权限访问" class="headerlink" title="0. ssh实现权限访问"></a>0. ssh实现权限访问</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">SshSessionFactory</span> <span class="hljs-variable">sshSessionFactory</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JschConfigSessionFactory</span>() &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">configure</span><span class="hljs-params">(OpenSshConfig.Host host, Session session)</span> &#123;<br><br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">protected</span> JSch <span class="hljs-title function_">createDefaultJSch</span><span class="hljs-params">(FS fs)</span> <span class="hljs-keyword">throws</span> JSchException &#123;<br>        <span class="hljs-type">JSch</span> <span class="hljs-variable">defaultJSch</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">super</span>.createDefaultJSch(fs);<br>        defaultJSch.removeAllIdentity();<br>        defaultJSch.addIdentity(<span class="hljs-string">&quot;~/.ssh/id_rsa&quot;</span>);<br>        <span class="hljs-keyword">return</span> defaultJSch;<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">TransportConfigCallback</span> <span class="hljs-variable">transportConfigCallback</span> <span class="hljs-operator">=</span> transport -&gt; &#123;<br>    <span class="hljs-keyword">if</span> (transport <span class="hljs-keyword">instanceof</span> SshTransport) &#123;<br>        <span class="hljs-type">SshTransport</span> <span class="hljs-variable">sshTransport</span> <span class="hljs-operator">=</span> (SshTransport) transport;<br>        sshTransport.setSshSessionFactory(JGitWebSync.<span class="hljs-built_in">this</span>.sshSessionFactory);<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里的写法基本是固定的，其中的id_rsa是通过<code>ssh-keygen -t rsa</code>生成获得的，如果之前生成了就不用管了，这里用的是私钥，而不是<code>id_rsa.pub</code></p>
+<h3 id="1-clone远程库"><a href="#1-clone远程库" class="headerlink" title="1. clone远程库"></a>1. clone远程库</h3><p>有了权限后就可以clone库了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-built_in">this</span>.git = Git.cloneRepository()<br>        .setTransportConfigCallback(<span class="hljs-built_in">this</span>.transportConfigCallback)<br>        .setURI(remoteURL) <span class="hljs-comment">// 远程地址 这里推荐使用ssh地址</span><br>        .setDirectory(repoDir) <span class="hljs-comment">// 本地用来存放数据的文件夹 要为空文件夹</span><br>        .call();<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-加载本地库"><a href="#2-加载本地库" class="headerlink" title="2. 加载本地库"></a>2. 加载本地库</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Repository</span> <span class="hljs-variable">repository</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileRepositoryBuilder</span>()<br>        .setGitDir(Paths.get(localPath, <span class="hljs-string">&quot;.git&quot;</span>).toFile())<br>        .build();<br><span class="hljs-built_in">this</span>.git = Git.wrap(repository);<br></code></pre></td></tr></table></figure>
+
+<p>这里人通过读取本地目录下的<code>.git</code>文件夹，之后使用<code>Git.wrap</code>进行封装成<code>Git</code>库</p>
+<h3 id="3-添加修改文件"><a href="#3-添加修改文件" class="headerlink" title="3. 添加修改文件"></a>3. 添加修改文件</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-built_in">this</span>.git.add().addFilepattern(fileName).call();<br></code></pre></td></tr></table></figure>
+
+<p>这里的<code>fileName</code>为添加的文件正则表达式，这里推荐使用每个文件添加一次进行调用，不要 <code>git add .</code>，不然在实际使用时可能会出现很多无用的添加，这里的fileName路径是相对于git库的路径，简言之跟普通的git使用是相同的</p>
+<h3 id="4-删除文件"><a href="#4-删除文件" class="headerlink" title="4. 删除文件"></a>4. 删除文件</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-built_in">this</span>.git.rm().addFilepattern(fileName).call();<br></code></pre></td></tr></table></figure>
+
+<p>这里的用法跟<code>add</code>类似，众所周知直接删除文件，之后通过<code>git add .</code>之后提交是可以更改git仓库的，但是JGit在push的时候并不能把删除操作同步到服务器（原版Git是可以的，可能是有什么bug？），实在想用也是可以的，但是还是需要手动调用<code>this.git.remoteRemove()</code>指令，不如就直接使用<code>rm()</code>了</p>
+<h3 id="5-仓库push来实现文件的提交"><a href="#5-仓库push来实现文件的提交" class="headerlink" title="5. 仓库push来实现文件的提交"></a>5. 仓库push来实现文件的提交</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 提交</span><br><span class="hljs-built_in">this</span>.git.commit().setMessage(message).call();<br><span class="hljs-comment">// 推送</span><br><span class="hljs-built_in">this</span>.git.push()<br>        .setTransportConfigCallback(<span class="hljs-built_in">this</span>.transportConfigCallback)<br>        .setRemote(<span class="hljs-string">&quot;origin&quot;</span>)<br>        .setRefSpecs(<span class="hljs-keyword">new</span> <span class="hljs-title class_">RefSpec</span>(<span class="hljs-string">&quot;master&quot;</span>))<br>        .call();<br></code></pre></td></tr></table></figure>
+
+<p>这里将<code>commit</code>和<code>push</code>放到一起来实现，这里的<code>setTransportConfigCallback</code>实现了ssh访问权限的加载，<code>setRemote</code>和<code>setRefSpecs</code>也可以当作接口暴露出来</p>
+<h3 id="6-仓库pull来实现文件的同步"><a href="#6-仓库pull来实现文件的同步" class="headerlink" title="6. 仓库pull来实现文件的同步"></a>6. 仓库pull来实现文件的同步</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-built_in">this</span>.git.pull()<br>        .setTransportConfigCallback(<span class="hljs-built_in">this</span>.transportConfigCallback)<br>        .setRemote(<span class="hljs-string">&quot;origin&quot;</span>)<br>        .call();<br></code></pre></td></tr></table></figure>
+
+<p>拉取就比较简单了，通上面的操作即可</p>
+<p>还有一些其他的设计这里就不详细介绍了，可以参考</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Kingqibin/JGitWebSync">https://github.com/Kingqibin/JGitWebSync</a></p>
+<hr>
+<p>后面的话看看有没有机会用该库写个小项目试一下，ok，如果有问题欢迎在下面留言评论~</p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>JGit学习以及基于JGit搭建一个简单的web库</div>
+      <div>https://kingqibin.github.io/2022/04/19/JGit学习以及基于JGit搭建一个简单的web库/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Kingqibin</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年4月19日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/04/19/%E5%85%B3%E4%BA%8E%E6%88%91%E6%83%B3%E5%9C%A8windows%E4%B8%8A%E7%BC%96%E8%AF%91colmap%E8%BF%99%E4%BB%B6%E4%BA%8B/" title="关于我想在windows上编译colmap这件事">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">关于我想在windows上编译colmap这件事</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/04/19/Boost-Log%E6%A8%A1%E5%9D%97%E5%AD%A6%E4%B9%A0/" title="Boost Log 模块学习">
+                        <span class="hidden-mobile">Boost Log 模块学习</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","appKey":"pkqNUo6eK3tLqxIQKHTgFA78","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

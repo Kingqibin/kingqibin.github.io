@@ -1,0 +1,807 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Kingqibin">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="该笔记用来记录学习boost库的日志模块，方便在后面的使用过程中翻阅查找。参考视频Boost日志库快速入门。 首先拿出log的框架设计图(祭天)，后面会反复参考这个东西。 [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-aD9oMVbj-1625902858707)(https:&#x2F;&#x2F;www.boost.org&#x2F;doc&#x2F;libs&#x2F;1_63_0&#x2F;libs&#x2F;log&#x2F;doc&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Boost Log 模块学习">
+<meta property="og:url" content="https://kingqibin.github.io/2022/04/19/Boost-Log%E6%A8%A1%E5%9D%97%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Kingqibin&#39;s Blog">
+<meta property="og:description" content="该笔记用来记录学习boost库的日志模块，方便在后面的使用过程中翻阅查找。参考视频Boost日志库快速入门。 首先拿出log的框架设计图(祭天)，后面会反复参考这个东西。 [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-aD9oMVbj-1625902858707)(https:&#x2F;&#x2F;www.boost.org&#x2F;doc&#x2F;libs&#x2F;1_63_0&#x2F;libs&#x2F;log&#x2F;doc&#x2F;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/ade32e1d7fcef625b230e2f772bd8bef.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/8b5f9e9a8e180e11a0e0cc1a8ac3ac5d.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/ad065fbc2a3aec148559405a51b7f73c.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/dcad576563dee0bc8899344718bc33a1.png">
+<meta property="article:published_time" content="2022-04-19T10:11:03.000Z">
+<meta property="article:modified_time" content="2022-04-19T10:15:12.379Z">
+<meta property="article:author" content="Kingqibin">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/img_convert/ade32e1d7fcef625b230e2f772bd8bef.png">
+  
+  
+  <title>Boost Log 模块学习 - Kingqibin&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"kingqibin.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","app_key":"pkqNUo6eK3tLqxIQKHTgFA78","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Kingqibin&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Boost Log 模块学习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-19 18:11" pubdate>
+          2022年4月19日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Boost Log 模块学习</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    本文最后更新于：2022年4月19日 晚上
+                  
+                
+              </p>
+            
+            <div class="markdown-body">
+              
+              <p>该笔记用来记录学习boost库的日志模块，方便在后面的使用过程中翻阅查找。参考视频<a target="_blank" rel="noopener" href="https://study.163.com/course/courseMain.htm?courseId=1209582814">Boost日志库快速入门</a>。</p>
+<p>首先拿出log的框架设计图(祭天)，后面会反复参考这个东西。</p>
+<p>[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-aD9oMVbj-1625902858707)(<a target="_blank" rel="noopener" href="https://www.boost.org/doc/libs/1_63_0/libs/log/doc/html/images/log/Design.png)]">https://www.boost.org/doc/libs/1_63_0/libs/log/doc/html/images/log/Design.png)]</a></p>
+<h2 id="1-快速示例"><a href="#1-快速示例" class="headerlink" title="1. 快速示例"></a>1. 快速示例</h2><p>示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">char</span>*[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>示例输出</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[2021-07-08 15:39:05.226965] [0x000080ac] [trace]   A trace severity message<br>[2021-07-08 15:39:05.227964] [0x000080ac] [debug]   A debug severity message<br>[2021-07-08 15:39:05.227964] [0x000080ac] [info]    An informational severity message<br>[2021-07-08 15:39:05.227964] [0x000080ac] [warning] A warning severity message<br>[2021-07-08 15:39:05.227964] [0x000080ac] [error]   An error severity message<br>[2021-07-08 15:39:05.227964] [0x000080ac] [fatal]   A fatal severity message<br></code></pre></td></tr></table></figure>
+
+<p>格式含义</p>
+<p><strong>[时间戳] [线程id] [日志级别]   打印信息</strong></p>
+<p>这里的日志级别(递增)使用规范如下</p>
+<ul>
+<li><strong>trace</strong> 最低级，用来打印一些执行信息，比如执行某些函数</li>
+<li><strong>debug</strong> 用来做一些调试输出</li>
+<li><strong>info</strong> 打印一些比较重要的阶段性信息</li>
+<li><strong>warning</strong> 打印一些可能不符合程序执行的潜在隐患</li>
+<li><strong>error</strong> 打印一些不影响程序继续执行的错误</li>
+<li><strong>fatal</strong> 通常是程序崩溃时打印的提示语句</li>
+</ul>
+<p>这里的<strong>BOOST_LOG_TRIVIAL</strong>是一个宏定义，该宏会根据输入的日志级别，生成指定的类流对象，该对象支持插入操作符，将输入的信息输出到控制台。</p>
+<h2 id="2-简单日志过滤"><a href="#2-简单日志过滤" class="headerlink" title="2. 简单日志过滤"></a>2. 简单日志过滤</h2><p>示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-comment">// 设置过滤器</span><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">set_filter</span><br>	(<br>		<span class="hljs-comment">// 这里是一个lambda表达式 只有大于info级别的日志才会输出</span><br>		logging::trivial::severity &gt;= logging::trivial::info<br>	);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">char</span>*[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>示例输出</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[2021-07-08 15:57:58.849685] [0x00004e00] [info]    An informational severity message<br>[2021-07-08 15:57:58.851685] [0x00004e00] [warning] A warning severity message<br>[2021-07-08 15:57:58.851685] [0x00004e00] [error]   An error severity message<br>[2021-07-08 15:57:58.851685] [0x00004e00] [fatal]   A fatal severity message<br></code></pre></td></tr></table></figure>
+
+<p>这里的**logging::core::get()**获取到了全局的核心单例日志对象，因此该过滤是对全局日志对象的设置。</p>
+<h2 id="3-设置输出槽"><a href="#3-设置输出槽" class="headerlink" title="3. 设置输出槽"></a>3. 设置输出槽</h2><p>基本步骤</p>
+<ol>
+<li>创建输出槽</li>
+<li>在日志核心中注册已经创建的输出槽</li>
+</ol>
+<p>设置输出槽的注意事项</p>
+<ol>
+<li>一般在程序的启动阶段设置输出槽</li>
+<li>快速日志输出使用库内建的输出槽作为默认输出</li>
+<li>一旦用户向日志核心添加了其他的输出槽，将不再使用默认的输出槽</li>
+</ol>
+<p>示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/file.hpp&gt;</span></span><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span> </span>&#123;<br><br>	<span class="hljs-comment">// 设置日志输出文件</span><br>	logging::<span class="hljs-built_in">add_file_log</span>(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>);<br><br>	<span class="hljs-comment">// 设置过滤器</span><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">set_filter</span><br>	(<br>		<span class="hljs-comment">// 只有大于info级别的日志才会输出</span><br>		logging::trivial::severity &gt;= logging::trivial::info<br>	);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">char</span>*[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125; <br></code></pre></td></tr></table></figure>
+
+<p>示例输出</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/ade32e1d7fcef625b230e2f772bd8bef.png" srcset="/img/loading.gif" lazyload alt="输出到log文件"></p>
+<p>可以看到，虽然有输出日志信息，但是格式跟默认的格式不符，没有了时间戳、线程id以及日志级别。要想设置地更为复杂，可以继续往下看。</p>
+<p>示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/file.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/console.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/common_attributes.hpp&gt;</span></span><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> keywords = boost::log::keywords;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span> </span>&#123;<br><br>	<span class="hljs-comment">// 设置日志输出文件</span><br>	logging::<span class="hljs-built_in">add_file_log</span>(	<br>		keywords::file_name = <span class="hljs-string">&quot;E:\\temp\\sample_%N.log&quot;</span>, <span class="hljs-comment">// 以smaple_N 为模板 N从0开始递增，配合下面的rotation使用</span><br>		keywords::rotation_size = <span class="hljs-number">1</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> , <span class="hljs-comment">// 每1M归一次档，生成一个日志文件</span><br>		keywords::time_based_rotation = sinks::file::<span class="hljs-built_in">rotation_at_time_point</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>), <span class="hljs-comment">// 每次 00:00:00(时间点) 生成一个归档</span><br>		keywords::format = <span class="hljs-string">&quot;[%TimeStamp%]: %Message%&quot;</span> <span class="hljs-comment">// 输出日志的格式 [时间戳]: 打印信息</span><br>	);<br>    <br>	logging::<span class="hljs-built_in">add_console_log</span>( <span class="hljs-comment">// 输出到控制台</span><br>		std::clog,<br>		keywords::format = <span class="hljs-string">&quot;[%TimeStamp%]: %Message%&quot;</span><br>	);<br>    <br>	<span class="hljs-comment">// 设置过滤器</span><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">set_filter</span><br>	(<br>		<span class="hljs-comment">// 只有大于info级别的日志才会输出</span><br>		logging::trivial::severity &gt;= logging::trivial::info<br>	);<br>    <span class="hljs-comment">// 添加一些默认属性，否则上面设置的东西可能不生效，如时间戳</span><br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">char</span>*[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>示例输出</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/8b5f9e9a8e180e11a0e0cc1a8ac3ac5d.png" srcset="/img/loading.gif" lazyload alt="输出到log文件"></p>
+<p>这里就不展示自动归档了，很简单，用一个循环或者跳时间试一下就好了。</p>
+<p>如果说想要再添加一个文件用来保存日志的话，就使用logging::add_file_log函数再设置一个日志文件就可以了。</p>
+<p>手动设置输出槽也是比较简单的，参考视频中的项目工程</p>
+<p>示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/shared_ptr.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/make_shared_object.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/sync_frontend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/text_ostream_backend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/record_ostream.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/core/null_deleter.hpp&gt;</span></span><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> src = boost::log::sources;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-comment">// 创建输出槽</span><br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt;sinks::text_ostream_backend&gt; text_sink;<br>	boost::shared_ptr&lt;text_sink&gt; sink = boost::<span class="hljs-built_in">make_shared</span>&lt;text_sink&gt;();<br><br>	<span class="hljs-comment">// 添加写文件的流</span><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>));<br><br>	<span class="hljs-comment">// 同时添加输出到屏幕</span><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(boost::<span class="hljs-built_in">shared_ptr</span>&lt;std::ostream&gt;(&amp;std::clog, boost::<span class="hljs-built_in">null_deleter</span>()));<br><br>	<span class="hljs-comment">// 把输出槽注册到日志库核心</span><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br><br>	src::logger lg;<br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; <span class="hljs-string">&quot;Hello world!&quot;</span>;<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>输出的话就比较简单了，这里把输出结果既输出到了控制台，又输出到了文件。</p>
+<h2 id="4-创建日志源"><a href="#4-创建日志源" class="headerlink" title="4. 创建日志源"></a>4. 创建日志源</h2><p>日志源，照我的理解就是创建一个用来向日志处理层发送数据的一个对象。</p>
+<p>以创建全局日志源为例</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/file.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/common_attributes.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/text_file_backend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/severity_logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/record_ostream.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/global_logger_storage.hpp&gt;</span></span><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> keywords = boost::log::keywords;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><span class="hljs-keyword">namespace</span> src = boost::log::sources;<br><br><span class="hljs-comment">// 定义一个全局的logger标签 my_logger</span><br><span class="hljs-built_in">BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT</span>(my_logger, src::logger_mt)<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-comment">// 这里的初始化都是对于log处理层而言，并不牵扯到日志源</span><br>	<span class="hljs-comment">// 设置日志输出文件</span><br>	logging::<span class="hljs-built_in">add_file_log</span>(	<br>		keywords::file_name = <span class="hljs-string">&quot;E:\\temp\\sample_%N.log&quot;</span>, <span class="hljs-comment">// 以smaple_N 为模板 N从0开始递增，配合下面的rotation使用</span><br>		keywords::rotation_size = <span class="hljs-number">1</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> , <span class="hljs-comment">// 每1M归一次档，生成一个日志文件</span><br>		keywords::time_based_rotation = sinks::file::<span class="hljs-built_in">rotation_at_time_point</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>), <span class="hljs-comment">// 每次 00:00:00(时间点) 生成一个归档</span><br>		keywords::format = <span class="hljs-string">&quot;[%TimeStamp%]: %Message%&quot;</span><span class="hljs-comment">// 输出日志的格式 [时间戳]: 打印信息</span><br>	);	<br><br>	<span class="hljs-comment">//// 设置过滤器</span><br>	<span class="hljs-comment">//logging::core::get()-&gt;set_filter</span><br>	<span class="hljs-comment">//(</span><br>	<span class="hljs-comment">//	// 只有大于info级别的日志才会输出</span><br>	<span class="hljs-comment">//	logging::trivial::severity &gt;= logging::trivial::info</span><br>	<span class="hljs-comment">//);</span><br>	<span class="hljs-comment">// 添加一些默认属性，否则上面设置的东西可能不生效，如时间戳</span><br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">char</span>*[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br>	<span class="hljs-comment">// BOOST_LOG_TRIVIAL 这个宏在输出日志时会使用默认的日志源</span><br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>	<span class="hljs-comment">// =================================================================================</span><br>    <span class="hljs-comment">// 获取全局的logger</span><br>	src::logger_mt&amp; lg_global = my_logger::<span class="hljs-built_in">get</span>();<br>	<span class="hljs-comment">// BOOST_LOG_SEV(lg, logging::trivial::severity_level::info) &lt;&lt; &quot;hello world&quot;;</span><br>	<span class="hljs-built_in">BOOST_LOG</span>(lg_global) &lt;&lt; <span class="hljs-string">&quot;hello world&quot;</span>;<br>   	<span class="hljs-comment">// =================================================================================</span><br>	<span class="hljs-comment">// 定义局部的logger</span><br>	src::logger lg_local;<br>	<span class="hljs-comment">// 手动logger输出</span><br>	logging::record rec = lg_local.<span class="hljs-built_in">open_record</span>();<br>	<span class="hljs-keyword">if</span> (rec)<br>	&#123;<br>		<span class="hljs-function">logging::record_ostream <span class="hljs-title">strm</span><span class="hljs-params">(rec)</span></span>;<br>		strm &lt;&lt; <span class="hljs-string">&quot;Hello, World!&quot;</span>;<br>		strm.<span class="hljs-built_in">flush</span>();<br>		lg_local.<span class="hljs-built_in">push_record</span>(boost::<span class="hljs-built_in">move</span>(rec));<br>	&#125;<br>	<span class="hljs-comment">// =================================================================================</span><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里注意要将log过滤器那一部分注释掉，不然可能打印不出来hello world</p>
+<p>示例结果</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/ad065fbc2a3aec148559405a51b7f73c.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="5-设置属性"><a href="#5-设置属性" class="headerlink" title="5. 设置属性"></a>5. 设置属性</h2><p>属性可以是与日志产生相关的信息，如当前的时间、行号、作用域等。属性既可以是固定的值，也可以是一个值生成器。根据作用域进行行划分，属性可以依次分为日志源级属性、线程级属性、全局属性等。这三种属性最终进行汇总，传递到槽。同一作用域内的属性必须不同名，不同作用域的属性可以同名，不同作用域的同名属性按照就近原则进行赋值。</p>
+<p><strong>常用属性</strong>：行号(日志)、时间戳、线程id、进行id。使用logging::add_common_attributes()进行添加。某些属性会在日志源创建时进行添加，如severity_logger。</p>
+<p>示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;ostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iomanip&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/shared_ptr.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/make_shared_object.hpp&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/attributes.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/attributes/scoped_attribute.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/severity_logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/record_ostream.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/sync_frontend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/text_ostream_backend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/common_attributes.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/date_time/posix_time/posix_time.hpp&gt;</span></span><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> src = boost::log::sources;<br><span class="hljs-keyword">namespace</span> expr = boost::log::expressions;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><span class="hljs-keyword">namespace</span> attrs = boost::log::attributes;<br><span class="hljs-keyword">namespace</span> keywords = boost::log::keywords;<br><br><span class="hljs-comment">// 手动定义日志级别</span><br><span class="hljs-keyword">enum</span> <span class="hljs-title class_">severity_level</span><br>&#123;<br>	normal,<br>	notification,<br>	warning,<br>	error,<br>	critical<br>&#125;;<br><br><span class="hljs-comment">// 这里是提供占位符 方便后面在设置格式时使用</span><br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(line_id, <span class="hljs-string">&quot;LineID&quot;</span>, <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)<br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(severity, <span class="hljs-string">&quot;Severity&quot;</span>, severity_level)<br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(scope, <span class="hljs-string">&quot;Scope&quot;</span>, attrs::named_scope::value_type)<br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(tag_attr, <span class="hljs-string">&quot;Tag&quot;</span>, std::string)<br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(timeline, <span class="hljs-string">&quot;Timeline&quot;</span>, attrs::timer::value_type)<br><br><br><br><span class="hljs-comment">// 因为手动定义了日志级别，为了使得ostream函数能够支持自定义的日志级别，需要提供一个friend函数</span><br>std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt; (std::ostream&amp; strm, severity_level level)<br>&#123;<br>	<span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* strings[] =<br>	&#123;<br>		<span class="hljs-string">&quot;normal&quot;</span>,<br>		<span class="hljs-string">&quot;notification&quot;</span>,<br>		<span class="hljs-string">&quot;warning&quot;</span>,<br>		<span class="hljs-string">&quot;error&quot;</span>,<br>		<span class="hljs-string">&quot;critical&quot;</span><br>	&#125;;<br><br>	<span class="hljs-keyword">if</span> (<span class="hljs-built_in">static_cast</span>&lt;std::<span class="hljs-type">size_t</span>&gt;(level) &lt; <span class="hljs-built_in">sizeof</span>(strings) / <span class="hljs-built_in">sizeof</span>(*strings))<br>		strm &lt;&lt; strings[level];<br>	<span class="hljs-keyword">else</span><br>		strm &lt;&lt; <span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">int</span>&gt;(level);<br><br>	<span class="hljs-keyword">return</span> strm;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">logging_function</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-comment">//BOOST_LOG_NAMED_SCOPE(&quot;named_scope_logging&quot;);</span><br>	<span class="hljs-comment">// 这里直接获取到该函数的定义</span><br>	<span class="hljs-built_in">BOOST_LOG_FUNCTION</span>();<br><br>	<span class="hljs-comment">// 定义局部的logger</span><br>	src::severity_logger&lt; severity_level &gt; slg;<br><br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, normal) &lt;&lt; <span class="hljs-string">&quot;A regular message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, warning) &lt;&lt; <span class="hljs-string">&quot;Something bad is going on but I can handle it&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, critical) &lt;&lt; <span class="hljs-string">&quot;Everything crumbles, shoot me now!&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">tagged_logging</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">BOOST_LOG_FUNCTION</span>();<br>	src::severity_logger&lt; severity_level &gt; slg;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, normal) &lt;&lt; <span class="hljs-string">&quot;normal log&quot;</span>;<br><br>	<span class="hljs-comment">// 日志源属性 添加tag</span><br>	slg.<span class="hljs-built_in">add_attribute</span>(<span class="hljs-string">&quot;Tag&quot;</span>, attrs::<span class="hljs-built_in">constant</span>&lt; std::string &gt;(<span class="hljs-string">&quot;Important&quot;</span>));<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, normal) &lt;&lt; <span class="hljs-string">&quot;normal log with tag&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">nested_logging</span><span class="hljs-params">(src::logger &amp; lg)</span></span><br><span class="hljs-function"></span>&#123;<br><br>	<span class="hljs-built_in">Sleep</span>(<span class="hljs-number">100</span>);<br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; <span class="hljs-string">&quot;睡眠100ms&quot;</span>;<br>	<span class="hljs-built_in">Sleep</span>(<span class="hljs-number">200</span>);<br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; <span class="hljs-string">&quot;睡眠200ms&quot;</span>;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">timed_logging</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br><br>	<span class="hljs-comment">// 开始计时</span><br>	<span class="hljs-built_in">BOOST_LOG_SCOPED_THREAD_ATTR</span>(<span class="hljs-string">&quot;Timeline&quot;</span>, attrs::<span class="hljs-built_in">timer</span>());<br><br>	src::logger lg;<br><br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; <span class="hljs-string">&quot;开始对嵌套函数计时&quot;</span>;<br>	<span class="hljs-built_in">nested_logging</span>(lg);<br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; <span class="hljs-string">&quot;结束对嵌套函数计时&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt; sinks::text_ostream_backend &gt; text_sink;<br>	boost::shared_ptr&lt; text_sink &gt; sink = boost::<span class="hljs-built_in">make_shared</span>&lt; text_sink &gt;();<br><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>));<br><br>	sink-&gt;<span class="hljs-built_in">set_formatter</span><br>	(<br>		expr::stream<br>		&lt;&lt; std::hex &lt;&lt; std::<span class="hljs-built_in">setw</span>(<span class="hljs-number">8</span>) &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27;0&#x27;</span>) &lt;&lt; line_id &lt;&lt; std::dec &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27; &#x27;</span>)<br>		&lt;&lt; expr::if_(expr::<span class="hljs-built_in">has_attr</span>(timeline)) <span class="hljs-comment">// 添加时间部分的格式化</span><br>		[<br>			expr::stream &lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; timeline &lt;&lt; <span class="hljs-string">&quot;] &quot;</span><br>		]<br>		&lt;&lt; <span class="hljs-string">&quot;: &lt;&quot;</span> &lt;&lt; severity &lt;&lt; <span class="hljs-string">&quot;&gt;\t&quot;</span><br>		&lt;&lt; <span class="hljs-string">&quot;(&quot;</span> &lt;&lt; scope &lt;&lt; <span class="hljs-string">&quot;)\t&quot;</span><br>		&lt;&lt; expr::if_(expr::<span class="hljs-built_in">has_attr</span>(tag_attr))	<span class="hljs-comment">//添加标签部分的格式化</span><br>		[<br>			expr::stream &lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; tag_attr &lt;&lt; <span class="hljs-string">&quot;] &quot;</span><br>		]<br>		&lt;&lt; expr::smessage<br>	);<br><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br><br>	<span class="hljs-comment">// 添加全局属性</span><br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_global_attribute</span>(<span class="hljs-string">&quot;Scope&quot;</span>, attrs::<span class="hljs-built_in">named_scope</span>());<br>	<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br>	<span class="hljs-built_in">logging_function</span>();<br>	<span class="hljs-built_in">tagged_logging</span>();<br>	<span class="hljs-built_in">timed_logging</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>示例输出</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/dcad576563dee0bc8899344718bc33a1.png" srcset="/img/loading.gif" lazyload></p>
+<p>这里基本上就是教学视频中的项目，添加了一些注释，并把三个项目合到了一起，展示了timeline、tag、severity三个属性的手动添加。只是格式稍微有点儿丑，后面可以自己再格式化亿下。</p>
+<h2 id="6-日志格式化"><a href="#6-日志格式化" class="headerlink" title="6. 日志格式化"></a>6. 日志格式化</h2><p>存在着很多的格式化方式</p>
+<p><strong>Lambda格式化器</strong></p>
+<p>示例</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs C++">expr::stream<br>&lt;&lt; std::hex &lt;&lt; std::<span class="hljs-built_in">setw</span>(<span class="hljs-number">8</span>) &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27;0&#x27;</span>) &lt;&lt; expr::<span class="hljs-built_in">attr</span>&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>&gt;(<span class="hljs-string">&quot;LineID&quot;</span>) &lt;&lt; std::dec &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27; &#x27;</span>)<br>&lt;&lt; expr::if_(expr::<span class="hljs-built_in">has_attr</span>(timeline)) <span class="hljs-comment">// 添加时间部分的格式化</span><br>[<br>expr::stream &lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; timeline &lt;&lt; <span class="hljs-string">&quot;] &quot;</span><br>]<br>&lt;&lt; <span class="hljs-string">&quot;: &lt;&quot;</span> &lt;&lt; severity &lt;&lt; <span class="hljs-string">&quot;&gt;\t&quot;</span><br>&lt;&lt; <span class="hljs-string">&quot;(&quot;</span> &lt;&lt; scope &lt;&lt; <span class="hljs-string">&quot;)\t&quot;</span><br>&lt;&lt; expr::if_(expr::<span class="hljs-built_in">has_attr</span>(tag_attr))	<span class="hljs-comment">//添加标签部分的格式化</span><br>[<br>expr::stream &lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; tag_attr &lt;&lt; <span class="hljs-string">&quot;] &quot;</span><br>]<br>&lt;&lt; expr::smessage<br></code></pre></td></tr></table></figure>
+
+<p>expr &#x3D; boost::log::expressions。这里的stream是一个流的占位符， expr::attr<unsigned int>(“LineID”)、severity、timeline、tag_attr、smessage都是将要输出到流里面的内容，timeline在前面介绍过是通过BOOST_LOG_ATTRIBUTE_KEYWORD(timeline, “Timeline”, attrs::timer::value_type)定义的一个替代符号。</p>
+<p><strong>Boost.Format格式化器</strong></p>
+<p>示例</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C++">expr::format(<span class="hljs-string">&quot;%1%: &lt;%2%&gt; %3%&quot;</span>)<br>    %expr::<span class="hljs-built_in">attr</span>&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>&gt;(<span class="hljs-string">&quot;LineID&quot;</span>)<br>    %logging::trivial::severity<br>    %expr::smessage<br></code></pre></td></tr></table></figure>
+
+<p>一看就明白的，不需要太多的介绍，相当于就是使用占位符进行格式化</p>
+<p><strong>专业格式化器</strong></p>
+<p>示例</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C++">expr::stream<br>    &lt;&lt; expr::format_date_time&lt;boost::posix_time::ptime&gt;(<span class="hljs-string">&quot;TimeStamp&quot;</span>, <span class="hljs-string">&quot;%Y-%M-%d %H:%M:%S&quot;</span>)<br>    &lt;&lt; <span class="hljs-string">&quot;: &lt;&quot;</span> &lt;&lt; logging::trivial::severity &lt;&lt; <span class="hljs-string">&quot;&gt;&quot;</span><br>    &lt;&lt; expr::smessage<br></code></pre></td></tr></table></figure>
+
+<p>这里的expr::format_date_time<a href="boost::posix_time::ptime">boost::posix_time::ptime</a>(“TimeStamp”, “%Y-%M-%d %H:%M:%S”)就是一个专业格式化器，可以对时间进行特殊的处理。</p>
+<p><strong>模板字符串格式化器</strong></p>
+<p>示例</p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey"><span class="hljs-title">logging::</span>add_file_log(	<br><span class="hljs-title">    keywords::</span>file_name = <span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>, <br><span class="hljs-title">    keywords::</span>format = <span class="hljs-string">&quot;[%TimeStamp%]: %Message%&quot;</span> <br>)<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p>就简单的那个使用例子，用%%嵌入属性的名称。sink-&gt;set_formatter不能接受模板字符串作为参数，需要使用parse_formatter函数进行解析。</p>
+<p><strong>自定义格式化器</strong></p>
+<p>示例</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">// 定义</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">my_formatter</span><span class="hljs-params">(logging::record_view <span class="hljs-type">const</span>&amp; rec, logging::formatting_ostream&amp; strm)</span></span><br><span class="hljs-function"></span>&#123;<br>	strm &lt;&lt; logging::<span class="hljs-built_in">extract</span>&lt; <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> &gt;(<span class="hljs-string">&quot;LineID&quot;</span>, rec) &lt;&lt; <span class="hljs-string">&quot;: &quot;</span>;<br>	strm &lt;&lt; <span class="hljs-string">&quot;&lt;&quot;</span> &lt;&lt; rec[logging::trivial::severity] &lt;&lt; <span class="hljs-string">&quot;&gt; &quot;</span>;<br>	strm &lt;&lt; rec[expr::smessage];<br>&#125;<br><span class="hljs-comment">// 使用</span><br>sink-&gt;<span class="hljs-built_in">set_formatter</span>(&amp;my_formatter);<br></code></pre></td></tr></table></figure>
+
+<p>感觉应该用不到这么高级的定义，就了解下算了。</p>
+<p>所有的示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iomanip&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/shared_ptr.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/make_shared_object.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/file.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/console.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/sync_frontend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/text_ostream_backend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/severity_logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/record_ostream.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/common_attributes.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/core/null_deleter.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/support/date_time.hpp&gt;</span></span><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> src = boost::log::sources;<br><span class="hljs-keyword">namespace</span> expr = boost::log::expressions;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><span class="hljs-keyword">namespace</span> keywords = boost::log::keywords;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">initLambdaFormat</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt; sinks::text_ostream_backend &gt; text_sink;<br>	boost::shared_ptr&lt; text_sink &gt; sink = boost::<span class="hljs-built_in">make_shared</span>&lt; text_sink &gt;();<br><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>));<br>	<span class="hljs-comment">// 这里同时把日志输出到控制台</span><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">shared_ptr</span>&lt;std::ostream&gt;(&amp;std::clog, boost::<span class="hljs-built_in">null_deleter</span>())<br>	);<br><br>	sink-&gt;<span class="hljs-built_in">set_formatter</span><br>	(<br>		expr::stream<br>		<span class="hljs-comment">// 行号将以前导为0的8位十六进制显示</span><br>		&lt;&lt; std::hex &lt;&lt; std::<span class="hljs-built_in">setw</span>(<span class="hljs-number">8</span>) &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27;0&#x27;</span>) &lt;&lt; expr::<span class="hljs-built_in">attr</span>&lt; <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> &gt;(<span class="hljs-string">&quot;LineID&quot;</span>)<br>		<span class="hljs-comment">// 注意这里因为使用的是logging::trivial::severity 因此才可以直接使用BOOST_LOG_TRIVIAL</span><br>		&lt;&lt; <span class="hljs-string">&quot;: &lt;&quot;</span> &lt;&lt; logging::trivial::severity<br>		&lt;&lt; <span class="hljs-string">&quot;&gt; &quot;</span> &lt;&lt; expr::smessage<br>	);<br><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br><br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">lambdaFormatTest</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-built_in">initLambdaFormat</span>();<br>	<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;in lambdaFormatTest&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">initBoostFormat</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt; sinks::text_ostream_backend &gt; text_sink;<br>	boost::shared_ptr&lt; text_sink &gt; sink = boost::<span class="hljs-built_in">make_shared</span>&lt; text_sink &gt;();<br><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>));<br>	<span class="hljs-comment">// 这里同时把日志输出到控制台</span><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">shared_ptr</span>&lt;std::ostream&gt;(&amp;std::clog, boost::<span class="hljs-built_in">null_deleter</span>())<br>	);<br><br>	sink-&gt;<span class="hljs-built_in">set_formatter</span><br>	(<br>		expr::format(<span class="hljs-string">&quot;%1%: &lt;%2%&gt; %3%&quot;</span>)<br>		% expr::<span class="hljs-built_in">attr</span>&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>&gt;(<span class="hljs-string">&quot;LineID&quot;</span>)<br>		% logging::trivial::severity<br>		%expr::smessage<br>	);<br><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br><br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">boostFormatTest</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-built_in">initBoostFormat</span>();<br><br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;in boostFormatTest&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">initSpecializedFormat</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt; sinks::text_ostream_backend &gt; text_sink;<br>	boost::shared_ptr&lt; text_sink &gt; sink = boost::<span class="hljs-built_in">make_shared</span>&lt; text_sink &gt;();<br><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>));<br>	<span class="hljs-comment">// 这里同时把日志输出到控制台</span><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">shared_ptr</span>&lt;std::ostream&gt;(&amp;std::clog, boost::<span class="hljs-built_in">null_deleter</span>())<br>	);<br><br>	sink-&gt;<span class="hljs-built_in">set_formatter</span><br>	(<br>		expr::stream<br>		&lt;&lt; expr::format_date_time&lt; boost::posix_time::ptime &gt;(<span class="hljs-string">&quot;TimeStamp&quot;</span>, <span class="hljs-string">&quot;%Y-%m-%d %H:%M:%S&quot;</span>)<br>		&lt;&lt; <span class="hljs-string">&quot;: &lt;&quot;</span> &lt;&lt; logging::trivial::severity<br>		&lt;&lt; <span class="hljs-string">&quot;&gt; &quot;</span> &lt;&lt; expr::smessage<br>	);<br><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br><br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">specializedFormatTest</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-built_in">initSpecializedFormat</span>();<br><br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;in specializedFormatTest&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">initStringFormat</span><span class="hljs-params">()</span> </span>&#123;<br>	logging::<span class="hljs-built_in">add_file_log</span>(<br>		keywords::file_name = <span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>,<br>		keywords::format = <span class="hljs-string">&quot;[%TimeStamp%]: %Message%&quot;</span><br>	);<br>	logging::<span class="hljs-built_in">add_console_log</span>(<br>		std::clog,<br>		keywords::format = <span class="hljs-string">&quot;[%TimeStamp%]: %Message%&quot;</span><br>	);<br><br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br><br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">stringFormatTest</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-built_in">initStringFormat</span>();<br><br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;in stringFormatTest&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">my_formatter</span><span class="hljs-params">(logging::record_view <span class="hljs-type">const</span>&amp; rec, logging::formatting_ostream&amp; strm)</span></span><br><span class="hljs-function"></span>&#123;<br>	strm &lt;&lt; logging::<span class="hljs-built_in">extract</span>&lt; <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> &gt;(<span class="hljs-string">&quot;LineID&quot;</span>, rec) &lt;&lt; <span class="hljs-string">&quot;: &quot;</span>;<br>	strm &lt;&lt; <span class="hljs-string">&quot;&lt;&quot;</span> &lt;&lt; rec[logging::trivial::severity] &lt;&lt; <span class="hljs-string">&quot;&gt; &quot;</span>;<br>	strm &lt;&lt; rec[expr::smessage];<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">initCustomFormat</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt; sinks::text_ostream_backend &gt; text_sink;<br>	boost::shared_ptr&lt; text_sink &gt; sink = boost::<span class="hljs-built_in">make_shared</span>&lt; text_sink &gt;();<br><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>));<br>	<span class="hljs-comment">// 这里同时把日志输出到控制台</span><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">shared_ptr</span>&lt;std::ostream&gt;(&amp;std::clog, boost::<span class="hljs-built_in">null_deleter</span>())<br>	);<br><br>	sink-&gt;<span class="hljs-built_in">set_formatter</span>(&amp;my_formatter);<br><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br><br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">customFormatTest</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-built_in">initCustomFormat</span>();<br><br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;in customFormatTest&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">char</span>*[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-comment">//// lambda foramt 测试</span><br>	<span class="hljs-comment">//lambdaFormatTest();</span><br>	<span class="hljs-comment">//// boost format 测试</span><br>	<span class="hljs-comment">//boostFormatTest();</span><br>	<span class="hljs-comment">//// specialized format 测试</span><br>	<span class="hljs-comment">//specializedFormatTest();</span><br>	<span class="hljs-comment">//// string format 测试</span><br>	<span class="hljs-comment">//stringFormatTest();</span><br>	<span class="hljs-comment">// custom format 测试</span><br>	<span class="hljs-built_in">customFormatTest</span>();<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="7-复杂日志过滤"><a href="#7-复杂日志过滤" class="headerlink" title="7. 复杂日志过滤"></a>7. 复杂日志过滤</h2><p>日志过滤这部分比较简单，就直接上源码了</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstddef&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;ostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iomanip&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/shared_ptr.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/make_shared_object.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/phoenix/bind.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/date_time/posix_time/posix_time.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/attributes.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/basic_logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/severity_logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/severity_channel_logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/record_ostream.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/sync_frontend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/text_ostream_backend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/attributes/scoped_attribute.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/value_ref.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/common_attributes.hpp&gt;</span></span><br><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> src = boost::log::sources;<br><span class="hljs-keyword">namespace</span> expr = boost::log::expressions;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><span class="hljs-keyword">namespace</span> attrs = boost::log::attributes;<br><span class="hljs-keyword">namespace</span> keywords = boost::log::keywords;<br><br><br><span class="hljs-comment">//自定义严重等级</span><br><span class="hljs-keyword">enum</span> <span class="hljs-title class_">severity_level</span><br>&#123;<br>	normal,<br>	notification,<br>	warning,<br>	error,<br>	critical<br>&#125;;<br><br><br><span class="hljs-comment">//重载&lt;&lt;运算符将严重等级插入流中</span><br>std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt; (std::ostream&amp; strm, severity_level level)<br>&#123;<br>	<span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* strings[] =<br>	&#123;<br>		<span class="hljs-string">&quot;normal&quot;</span>,<br>		<span class="hljs-string">&quot;notification&quot;</span>,<br>		<span class="hljs-string">&quot;warning&quot;</span>,<br>		<span class="hljs-string">&quot;error&quot;</span>,<br>		<span class="hljs-string">&quot;critical&quot;</span><br>	&#125;;<br><br>	<span class="hljs-keyword">if</span> (<span class="hljs-built_in">static_cast</span>&lt;std::<span class="hljs-type">size_t</span>&gt;(level) &lt; <span class="hljs-built_in">sizeof</span>(strings) / <span class="hljs-built_in">sizeof</span>(*strings))<br>		strm &lt;&lt; strings[level];<br>	<span class="hljs-keyword">else</span><br>		strm &lt;&lt; <span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">int</span>&gt;(level);<br><br>	<span class="hljs-keyword">return</span> strm;<br>&#125;<br><br><br><span class="hljs-comment">//定义属性关键字</span><br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(line_id, <span class="hljs-string">&quot;LineID&quot;</span>, <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)<br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(severity, <span class="hljs-string">&quot;Severity&quot;</span>, severity_level)<br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(tag_attr, <span class="hljs-string">&quot;Tag&quot;</span>, std::string)<br><br><span class="hljs-comment">//自定义过滤函数</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">my_filter</span><span class="hljs-params">(logging::value_ref&lt; severity_level, tag::severity &gt; <span class="hljs-type">const</span>&amp; level,</span></span><br><span class="hljs-params"><span class="hljs-function">	logging::value_ref&lt; std::string, tag::tag_attr &gt; <span class="hljs-type">const</span>&amp; tag)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-keyword">return</span> level &gt;= warning || tag == <span class="hljs-string">&quot;IMPORTANT_MESSAGE&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-comment">//为所有槽设置公共的格式化器</span><br>	logging::formatter fmt1 = expr::stream<br>		&lt;&lt; <span class="hljs-string">&quot;fmt1: &quot;</span><br>		&lt;&lt; std::<span class="hljs-built_in">setw</span>(<span class="hljs-number">6</span>) &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27;0&#x27;</span>) &lt;&lt; line_id &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27; &#x27;</span>)<br>		&lt;&lt; <span class="hljs-string">&quot;: &lt;&quot;</span> &lt;&lt; severity &lt;&lt; <span class="hljs-string">&quot;&gt;\t&quot;</span><br>		&lt;&lt; expr::if_(expr::<span class="hljs-built_in">has_attr</span>(tag_attr))<br>		[<br>			expr::stream &lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; tag_attr &lt;&lt; <span class="hljs-string">&quot;] &quot;</span><br>		]<br>	&lt;&lt; expr::smessage;<br><br>	logging::formatter fmt2 = expr::stream<br>		&lt;&lt; <span class="hljs-string">&quot;fmt2: &quot;</span><br>		&lt;&lt; std::<span class="hljs-built_in">setw</span>(<span class="hljs-number">6</span>) &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27;0&#x27;</span>) &lt;&lt; line_id &lt;&lt; std::<span class="hljs-built_in">setfill</span>(<span class="hljs-string">&#x27; &#x27;</span>)<br>		&lt;&lt; <span class="hljs-string">&quot;: &lt;&quot;</span> &lt;&lt; severity &lt;&lt; <span class="hljs-string">&quot;&gt;\t&quot;</span><br>		&lt;&lt; expr::if_(expr::<span class="hljs-built_in">has_attr</span>(tag_attr))<br>		[<br>			expr::stream &lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; tag_attr &lt;&lt; <span class="hljs-string">&quot;] &quot;</span><br>		]<br>	&lt;&lt; expr::smessage;<br><br>	<span class="hljs-comment">//初始化槽</span><br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt; sinks::text_ostream_backend &gt; text_sink;<br>	boost::shared_ptr&lt; text_sink &gt; sink = boost::<span class="hljs-built_in">make_shared</span>&lt; text_sink &gt;();<br><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\full.log&quot;</span>));<br><br>	sink-&gt;<span class="hljs-built_in">set_formatter</span>(fmt1);<br><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br><br>	sink = boost::<span class="hljs-built_in">make_shared</span>&lt; text_sink &gt;();<br><br>	sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\important.log&quot;</span>));<br><br>	<span class="hljs-comment">//sink-&gt;locked_backend()-&gt;auto_flush(true); // 加上这一句之后 每出现一条重要信息后 都会flush一次</span><br><br>	sink-&gt;<span class="hljs-built_in">set_formatter</span>(fmt2);<br><br>	<span class="hljs-comment">//sink-&gt;set_filter(severity &gt;= warning || (expr::has_attr(tag_attr) &amp;&amp; tag_attr == &quot;IMPORTANT_MESSAGE&quot;));</span><br>	<span class="hljs-keyword">namespace</span> phoenix = boost::phoenix;<br>	sink-&gt;<span class="hljs-built_in">set_filter</span>(phoenix::<span class="hljs-built_in">bind</span>(&amp;my_filter, severity.<span class="hljs-built_in">or_none</span>(), tag_attr.<span class="hljs-built_in">or_none</span>()));<br><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(sink);<br><br>	<span class="hljs-comment">//添加常用属性</span><br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">logging_function</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	src::severity_logger&lt; severity_level &gt; slg;<br><br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, normal) &lt;&lt; <span class="hljs-string">&quot;常规消息&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, warning) &lt;&lt; <span class="hljs-string">&quot;警告消息&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, critical) &lt;&lt; <span class="hljs-string">&quot;致命错误消息&quot;</span>;<br><br>	&#123;<br>		<span class="hljs-built_in">BOOST_LOG_SCOPED_THREAD_TAG</span>(<span class="hljs-string">&quot;Tag&quot;</span>, <span class="hljs-string">&quot;IMPORTANT_MESSAGE&quot;</span>);<br>		<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, normal) &lt;&lt; <span class="hljs-string">&quot;重要消息&quot;</span>;<br>	&#125;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">char</span>*[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br><br>	<span class="hljs-built_in">logging_function</span>();<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>有几个点还是需要注意下的</p>
+<ol>
+<li>可以对不同的日志文件使用不同的输出格式</li>
+<li>可以对不同的日志文件使用不同的过滤器</li>
+<li>可以通过打标签的方式控制不同的日志流向</li>
+</ol>
+<p>过滤的存在使得日志可以有更多灵活的处理方式</p>
+<h2 id="8-宽字节日志"><a href="#8-宽字节日志" class="headerlink" title="8. 宽字节日志"></a>8. 宽字节日志</h2><p>主要就是牵扯到不同的操作系统、软件打开日志时使用的阅读格式可能时不同的，为了应对这一点，sink在后端加了一个字符转换的功能</p>
+<p>这里直接贴视频里的代码吧~</p>
+<p>示例源码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/locale/generator.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/date_time/posix_time/posix_time_types.hpp&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/common.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/file.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/console.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/common_attributes.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sources/logger.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/support/date_time.hpp&gt;</span></span><br><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><span class="hljs-keyword">namespace</span> attrs = boost::log::attributes;<br><span class="hljs-keyword">namespace</span> src = boost::log::sources;<br><span class="hljs-keyword">namespace</span> expr = boost::log::expressions;<br><span class="hljs-keyword">namespace</span> keywords = boost::log::keywords;<br><br><br><span class="hljs-keyword">enum</span> <span class="hljs-title class_">severity_level</span><br>&#123;<br>	normal,<br>	notification,<br>	warning,<br>	error,<br>	critical<br>&#125;;<br><br><br><span class="hljs-keyword">template</span>&lt; <span class="hljs-keyword">typename</span> CharT, <span class="hljs-keyword">typename</span> TraitsT &gt;<br><span class="hljs-keyword">inline</span> std::basic_ostream&lt; CharT, TraitsT &gt;&amp; <span class="hljs-keyword">operator</span>&lt;&lt; (<br>	std::basic_ostream&lt; CharT, TraitsT &gt;&amp; strm, severity_level lvl)<br>&#123;<br>	<span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-type">const</span> str[] =<br>	&#123;<br>		<span class="hljs-string">&quot;normal&quot;</span>,<br>		<span class="hljs-string">&quot;notification&quot;</span>,<br>		<span class="hljs-string">&quot;warning&quot;</span>,<br>		<span class="hljs-string">&quot;error&quot;</span>,<br>		<span class="hljs-string">&quot;critical&quot;</span><br>	&#125;;<br>	<span class="hljs-keyword">if</span> (<span class="hljs-built_in">static_cast</span>&lt;std::<span class="hljs-type">size_t</span>&gt;(lvl) &lt; (<span class="hljs-built_in">sizeof</span>(str) / <span class="hljs-built_in">sizeof</span>(*str)))<br>		strm &lt;&lt; str[lvl];<br>	<span class="hljs-keyword">else</span><br>		strm &lt;&lt; <span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">int</span>&gt;(lvl);<br>	<span class="hljs-keyword">return</span> strm;<br>&#125;<br><br><br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(severity, <span class="hljs-string">&quot;Severity&quot;</span>, severity_level)<br><span class="hljs-built_in">BOOST_LOG_ATTRIBUTE_KEYWORD</span>(timestamp, <span class="hljs-string">&quot;TimeStamp&quot;</span>, boost::posix_time::ptime)<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init_logging</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	boost::shared_ptr&lt; sinks::synchronous_sink&lt; sinks::text_file_backend &gt; &gt; sink = logging::<span class="hljs-built_in">add_file_log</span><br>	(<br>		<span class="hljs-string">&quot;sample.log&quot;</span>,<br>		keywords::format = expr::stream<br>		&lt;&lt; expr::format_date_time(timestamp, <span class="hljs-string">&quot;%Y-%m-%d, %H:%M:%S.%f&quot;</span>)<br>		&lt;&lt; <span class="hljs-string">&quot; &lt;&quot;</span> &lt;&lt; severity.<span class="hljs-built_in">or_default</span>(normal)<br>		&lt;&lt; <span class="hljs-string">&quot;&gt; &quot;</span> &lt;&lt; expr::message<br>	);<br><br>	std::locale loc = boost::locale::<span class="hljs-built_in">generator</span>()(<span class="hljs-string">&quot;en_US.UTF-8&quot;</span>);<br>	sink-&gt;<span class="hljs-built_in">imbue</span>(loc);<br><br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">test_narrow_char_logging</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	src::logger lg;<br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; <span class="hljs-string">&quot;Narrow character message&quot;</span>;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">test_wide_char_logging</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	src::wlogger lg;<br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; <span class="hljs-string">L&quot;Wide character message&quot;</span>;<br><br>	<span class="hljs-type">const</span> <span class="hljs-type">wchar_t</span> chinese_chars[] = &#123; <span class="hljs-number">0x5BBD</span>, <span class="hljs-number">0x5B57</span>, <span class="hljs-number">0x7B26</span>, <span class="hljs-number">0</span> &#125;;<br>	<span class="hljs-built_in">BOOST_LOG</span>(lg) &lt;&lt; chinese_chars;<br><br>	src::wseverity_logger&lt; severity_level &gt; slg;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, normal) &lt;&lt; <span class="hljs-string">L&quot;A normal severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, warning) &lt;&lt; <span class="hljs-string">L&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_SEV</span>(slg, error) &lt;&lt; <span class="hljs-string">L&quot;An error severity message&quot;</span>;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init_logging</span>();<br>	<span class="hljs-built_in">test_narrow_char_logging</span>();<br>	<span class="hljs-built_in">test_wide_char_logging</span>();<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="9-通过网络发送日志"><a href="#9-通过网络发送日志" class="headerlink" title="9. 通过网络发送日志"></a>9. 通过网络发送日志</h2><p>这一部分可能有些人会用到<del>（你说的有些人不会是你自己吧）</del></p>
+<p>这里的话主要是用到了一个syslog_backend，其实使用的话也比较简单，官方的已经给出了使用样例(&lt;boost源码目录&gt;&#x2F;libs&#x2F;log&#x2F;example&#x2F;syslog)</p>
+<p>因此这里的话就贴一下我自己的一个代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iomanip&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/core/null_deleter.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/shared_ptr.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/smart_ptr/make_shared_object.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/core.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/trivial.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/expressions.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/sync_frontend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/text_ostream_backend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/sinks/syslog_backend.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/support/date_time.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/file.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/console.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/log/utility/setup/common_attributes.hpp&gt;</span></span><br><br><br><span class="hljs-keyword">namespace</span> logging = boost::log;<br><span class="hljs-keyword">namespace</span> src = boost::log::sources;<br><span class="hljs-keyword">namespace</span> expr = boost::log::expressions;<br><span class="hljs-keyword">namespace</span> sinks = boost::log::sinks;<br><span class="hljs-keyword">namespace</span> keywords = boost::log::keywords;<br><span class="hljs-keyword">namespace</span> attrs = boost::log::attributes;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-comment">// ======================================================</span><br>	<span class="hljs-comment">// 创建文本输出槽</span><br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt;sinks::text_ostream_backend&gt; text_sink;<br>	boost::shared_ptr&lt;text_sink&gt; local_sink = boost::<span class="hljs-built_in">make_shared</span>&lt;text_sink&gt;();<br>	<span class="hljs-comment">// 添加写文件的流</span><br>	local_sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(<br>		boost::<span class="hljs-built_in">make_shared</span>&lt; std::ofstream &gt;(<span class="hljs-string">&quot;E:\\temp\\sample.log&quot;</span>));<br>	local_sink-&gt;<span class="hljs-built_in">set_formatter</span><br>	(<br>		expr::stream<br>		&lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; expr::format_date_time&lt; boost::posix_time::ptime &gt;(<span class="hljs-string">&quot;TimeStamp&quot;</span>, <span class="hljs-string">&quot;%Y-%m-%d %H:%M:%S&quot;</span>) &lt;&lt; <span class="hljs-string">&quot;]&quot;</span><br>		&lt;&lt; <span class="hljs-string">&quot;(&quot;</span> &lt;&lt; logging::trivial::severity &lt;&lt; <span class="hljs-string">&quot;) : &quot;</span><br>		&lt;&lt; expr::message<br>	);<br>	<span class="hljs-comment">// 同时添加输出到屏幕</span><br>	local_sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">add_stream</span>(boost::<span class="hljs-built_in">shared_ptr</span>&lt;std::ostream&gt;(&amp;std::clog, boost::<span class="hljs-built_in">null_deleter</span>()));<br>	<span class="hljs-comment">// 把输出槽注册到日志库核心</span><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(local_sink);<br>	<span class="hljs-comment">// ======================================================</span><br>	<span class="hljs-comment">// 创建网络输出槽</span><br>	<span class="hljs-keyword">typedef</span> sinks::synchronous_sink&lt;sinks::syslog_backend&gt; net_sink;<br>	boost::shared_ptr&lt;net_sink&gt; remote_sink = boost::<span class="hljs-built_in">make_shared</span>&lt;net_sink&gt;();<br><br>	remote_sink-&gt;<span class="hljs-built_in">set_formatter</span><br>	(<br>		expr::stream<br>		&lt;&lt; <span class="hljs-string">&quot;[&quot;</span> &lt;&lt; expr::format_date_time&lt; boost::posix_time::ptime &gt;(<span class="hljs-string">&quot;TimeStamp&quot;</span>, <span class="hljs-string">&quot;%Y-%m-%d %H:%M:%S&quot;</span>) &lt;&lt; <span class="hljs-string">&quot;]&quot;</span><br>		&lt;&lt; <span class="hljs-string">&quot;(&quot;</span> &lt;&lt; logging::trivial::severity &lt;&lt; <span class="hljs-string">&quot;) : &quot;</span><br>		&lt;&lt; expr::message<br>	);<br><br>	remote_sink-&gt;<span class="hljs-built_in">locked_backend</span>()-&gt;<span class="hljs-built_in">set_target_address</span>(<span class="hljs-string">&quot;localhost&quot;</span>, <span class="hljs-number">1024</span>); <span class="hljs-comment">// 这个地方的端口的话  可以参数化定义</span><br>	<span class="hljs-comment">// 只把trace级别的信息进行发送</span><br>	remote_sink-&gt;<span class="hljs-built_in">set_filter</span>(logging::trivial::severity == logging::trivial::severity_level::trace);<br><br>	<span class="hljs-comment">// 把输出槽注册到日志库核心</span><br>	logging::core::<span class="hljs-built_in">get</span>()-&gt;<span class="hljs-built_in">add_sink</span>(remote_sink);<br>	<span class="hljs-comment">// ======================================================</span><br>	<span class="hljs-comment">// 添加常用属性</span><br>	logging::<span class="hljs-built_in">add_common_attributes</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">init</span>();<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(trace) &lt;&lt; <span class="hljs-string">&quot;A trace severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(debug) &lt;&lt; <span class="hljs-string">&quot;A debug severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(info) &lt;&lt; <span class="hljs-string">&quot;An informational severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(warning) &lt;&lt; <span class="hljs-string">&quot;A warning severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(error) &lt;&lt; <span class="hljs-string">&quot;An error severity message&quot;</span>;<br>	<span class="hljs-built_in">BOOST_LOG_TRIVIAL</span>(fatal) &lt;&lt; <span class="hljs-string">&quot;A fatal severity message&quot;</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>除此之外贴一个服务器端代码，方便做测试，这部分有参考<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/5de8ee17a30e">文章</a></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio::ip;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio;<br>	<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio::ip;<br>	<span class="hljs-keyword">try</span><br>	&#123;<br>		boost::asio::io_service io; <span class="hljs-comment">//构造IO服务,由于非异步,无需run</span><br><br>		<span class="hljs-function">udp::socket <span class="hljs-title">socket</span><span class="hljs-params">(io, udp::endpoint(udp::v4(), <span class="hljs-number">1024</span>))</span></span>;<span class="hljs-comment">//构造socket并绑定到1024端口</span><br><br>		std::cout &lt;&lt; <span class="hljs-string">&quot;bind to port 1024, begin receive message...\n&quot;</span>;<br>		<span class="hljs-keyword">for</span> (;;)<br>		&#123;<br>			std::array&lt;<span class="hljs-type">char</span>, 1024&gt; recv_buf;<span class="hljs-comment">//接收缓冲</span><br>			udp::endpoint remote_endpoint; <span class="hljs-comment">//发送端信息</span><br>			boost::system::error_code error;<br><br>			<span class="hljs-comment">//阻塞读取</span><br>			<span class="hljs-keyword">auto</span> size = socket.<span class="hljs-built_in">receive_from</span>(boost::asio::<span class="hljs-built_in">buffer</span>(recv_buf), remote_endpoint, <span class="hljs-number">0</span>, error);<br><br>			<span class="hljs-keyword">if</span> (error &amp;&amp; error != boost::asio::error::message_size)<br>			&#123;<br>				<span class="hljs-keyword">throw</span> boost::system::<span class="hljs-built_in">system_error</span>(error);<br>			&#125;<br>			std::cout.<span class="hljs-built_in">write</span>(recv_buf.<span class="hljs-built_in">data</span>(), size);<span class="hljs-comment">//输出结果</span><br>			std::cout &lt;&lt; std::endl;<br>		&#125;<br>	&#125;<br>	<span class="hljs-built_in">catch</span> (std::exception&amp; e)<br>	&#123;<br>		std::cerr &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<p>至此笔记全部完成，总的来说，Boost.log这个库是真的强大，基本上所有你能想到的功能都可以轻松地实现，入门的话感觉并不是很复杂，但是想要玩儿地花的话，还得多看api了，最后十分感谢“编程小强”的讲解<a target="_blank" rel="noopener" href="https://study.163.com/course/courseMain.htm?courseId=1209582814">视频</a></p>
+<p>此外，根据<a target="_blank" rel="noopener" href="https://zhongpan.tech/2019/07/04/010-cpp-logging-framework-benchmark/">文章</a>的测试可以看到，spdlog的效率好像更高一些，spdlog我也有尝试着用了一下，感觉也还是挺不错的，后面可能会再学习下这个东西。</p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Boost Log 模块学习</div>
+      <div>https://kingqibin.github.io/2022/04/19/Boost-Log模块学习/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Kingqibin</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年4月19日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/04/19/JGit%E5%AD%A6%E4%B9%A0%E4%BB%A5%E5%8F%8A%E5%9F%BA%E4%BA%8EJGit%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84web%E5%BA%93/" title="JGit学习以及基于JGit搭建一个简单的web库">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">JGit学习以及基于JGit搭建一个简单的web库</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/04/19/error-Boost-Log-RTTI-is-required-by-the-library-%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/" title="error Boost.Log &#34;RTTI is required by the ibrary&#34; 问题解决">
+                        <span class="hidden-mobile">error Boost.Log &#34;RTTI is required by the ibrary&#34; 问题解决</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","appKey":"pkqNUo6eK3tLqxIQKHTgFA78","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

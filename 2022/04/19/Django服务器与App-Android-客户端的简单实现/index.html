@@ -1,0 +1,741 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Kingqibin">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="作者是一个技术小白，这也是本人的第一篇文章，虽然网上关于Django和Android结合搭建app的文章很多，但是还是想要根据自己在搭建过程中遇到的问题写一篇学习笔记，同时也供他人借鉴一下。说明：本示例app为本人实现 的一个很简单的记账软件，不喜勿喷。附github地址：https:&#x2F;&#x2F;github.com&#x2F;Kingqibin&#x2F;PayKeep_Online  环境要求：  Ubuntu 16.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Django服务器与App(Android)客户端的简单实现">
+<meta property="og:url" content="https://kingqibin.github.io/2022/04/19/Django%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8EApp-Android-%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Kingqibin&#39;s Blog">
+<meta property="og:description" content="作者是一个技术小白，这也是本人的第一篇文章，虽然网上关于Django和Android结合搭建app的文章很多，但是还是想要根据自己在搭建过程中遇到的问题写一篇学习笔记，同时也供他人借鉴一下。说明：本示例app为本人实现 的一个很简单的记账软件，不喜勿喷。附github地址：https:&#x2F;&#x2F;github.com&#x2F;Kingqibin&#x2F;PayKeep_Online  环境要求：  Ubuntu 16.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20190601202601396.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_20,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20190601202444924.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_20,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2022-04-19T10:14:07.000Z">
+<meta property="article:modified_time" content="2022-04-19T10:15:23.392Z">
+<meta property="article:author" content="Kingqibin">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20190601202601396.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_20,color_FFFFFF,t_70">
+  
+  
+  <title>Django服务器与App(Android)客户端的简单实现 - Kingqibin&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"kingqibin.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","app_key":"pkqNUo6eK3tLqxIQKHTgFA78","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Kingqibin&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Django服务器与App(Android)客户端的简单实现"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-19 18:14" pubdate>
+          2022年4月19日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Django服务器与App(Android)客户端的简单实现</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    本文最后更新于：2022年4月19日 晚上
+                  
+                
+              </p>
+            
+            <div class="markdown-body">
+              
+              <blockquote>
+<p>作者是一个技术小白，这也是本人的第一篇文章，虽然网上关于Django和Android结合搭建app的文章很多，但是还是想要根据自己在搭建过程中遇到的问题写一篇学习笔记，同时也供他人借鉴一下。<br>说明：本示例app为本人实现 的一个很简单的记账软件，不喜勿喷。<br>附github地址：<a target="_blank" rel="noopener" href="https://github.com/Kingqibin/PayKeep_Online">https://github.com/Kingqibin/PayKeep_Online</a></p>
+</blockquote>
+<p><strong>环境要求：</strong></p>
+<ol>
+<li>Ubuntu 16.04 LTS 桌面版&#x2F;服务器版</li>
+<li>Python 3</li>
+<li>pip等</li>
+</ol>
+<p><strong>代码实现</strong></p>
+<ol>
+<li>安装Django:</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs linux">pip install django<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>创建django项目：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs linux">django-admin startproject paykeep # 创建项目<br>django-admin startapp paykeep_service # 主要的服务内容<br></code></pre></td></tr></table></figure>
+
+<p>startproject命令主要的作用是开启了一个项目的成熟框架，在之后的操作中只需要修改一下里面的参数。<br>startapp命令主要的功能是创建实现功能的模板。<br><strong>以下在搭建时主要就是修改paykeep和paykeep_service文件夹下的主要内容。</strong><br><img src="https://img-blog.csdnimg.cn/20190601202601396.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_20,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="paykeep的目录文件"><br><img src="https://img-blog.csdnimg.cn/20190601202444924.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzNzY1MTk5,size_20,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="paykeep_service下的文件目录结构"></p>
+<ol start="3">
+<li>修改paykeep_service下的内容：</li>
+</ol>
+<p>（1）修改app.py的内容：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">PaykeepServiceConfig</span>(<span class="hljs-title class_ inherited__">AppConfig</span>):<br>    name = <span class="hljs-string">&#x27;paykeep_service&#x27;</span>   <span class="hljs-comment">#修改name为你项目的名称</span><br></code></pre></td></tr></table></figure>
+
+<p>（2）修改model.py的内容：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.db <span class="hljs-keyword">import</span> models<br><span class="hljs-comment"># 以下定义自己的类模型，以及相对应的数据段</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Pay</span>(models.Model):<br>    <span class="hljs-built_in">id</span> = models.IntegerField(null=<span class="hljs-literal">False</span>, primary_key=<span class="hljs-literal">True</span>)<br>    item_spend = models.CharField(null=<span class="hljs-literal">False</span>, max_length=<span class="hljs-number">50</span>)<br>    money = models.FloatField(null=<span class="hljs-literal">False</span>)<br>    year = models.IntegerField(null=<span class="hljs-literal">False</span>)<br>    month = models.IntegerField(null=<span class="hljs-literal">False</span>)<br>    day = models.IntegerField(null=<span class="hljs-literal">False</span>)<br>    isPri = models.BooleanField(null=<span class="hljs-literal">False</span>)<br>    data_added = models.DateTimeField(auto_now_add=<span class="hljs-literal">True</span>)<br><span class="hljs-comment"># 以下的函数的作用是在展示 调试时显示相应的数据内容，可以自行配置</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__str__</span>(<span class="hljs-params">self</span>):<br>        temp = <span class="hljs-string">&quot;id is : &quot;</span> + <span class="hljs-built_in">str</span>(self.<span class="hljs-built_in">id</span>) + <span class="hljs-string">&quot;--item is : &quot;</span> + <span class="hljs-built_in">str</span>(self.item_spend)<br>        <span class="hljs-keyword">return</span> temp<br></code></pre></td></tr></table></figure>
+
+<p>关于更多的类型数据定义可以自行google相关的django API。</p>
+<p>（3）修改最重要的view.py的内容：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.shortcuts <span class="hljs-keyword">import</span> render<br><span class="hljs-keyword">from</span> .models <span class="hljs-keyword">import</span> Pay <span class="hljs-comment">#！！！</span><br><span class="hljs-keyword">from</span> django.http <span class="hljs-keyword">import</span> HttpResponse<span class="hljs-comment">#！！！</span><br><span class="hljs-keyword">from</span> django.core.exceptions <span class="hljs-keyword">import</span> ObjectDoesNotExist<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">pay</span>(<span class="hljs-params">request</span>):<br><span class="hljs-comment"># 解析请求方式：</span><br>    <span class="hljs-keyword">if</span> request.method == <span class="hljs-string">&#x27;POST&#x27;</span>:<br>        item_spend = request.POST.get(<span class="hljs-string">&#x27;item_spend&#x27;</span>)<br>        <span class="hljs-built_in">id</span> = request.POST.get(<span class="hljs-string">&#x27;id&#x27;</span>)<br>        money = request.POST.get(<span class="hljs-string">&#x27;money&#x27;</span>)<br>        year = request.POST.get(<span class="hljs-string">&#x27;year&#x27;</span>)<br>        month = request.POST.get(<span class="hljs-string">&#x27;month&#x27;</span>)<br>        day = request.POST.get(<span class="hljs-string">&#x27;day&#x27;</span>)<br>        isPri = request.POST.get(<span class="hljs-string">&#x27;isPri&#x27;</span>)<br>        fun = request.POST.get(<span class="hljs-string">&#x27;fun&#x27;</span>)<br>        <span class="hljs-comment"># 功能解析</span><br>        <span class="hljs-keyword">if</span> fun == <span class="hljs-string">&#x27;1&#x27;</span>:<br>            Pay.objects.create(<span class="hljs-built_in">id</span>=<span class="hljs-built_in">id</span>, item_spend=item_spend, money=money, year=year, month=month, day=day, isPri=isPri)<br>            <span class="hljs-keyword">try</span>:<br>                t = Pay.objects.get(<span class="hljs-built_in">id</span>=<span class="hljs-built_in">id</span>)<br>                <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&quot;add_ok&quot;</span>)<br>            <span class="hljs-keyword">except</span> ObjectDoesNotExist:<br>                <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&quot;add_error&quot;</span>)<br>        <span class="hljs-keyword">elif</span> fun == <span class="hljs-string">&#x27;2&#x27;</span>:<br>            <span class="hljs-keyword">try</span>:<br>                temp = Pay.objects.get(<span class="hljs-built_in">id</span>=<span class="hljs-built_in">id</span>)<br>                temp.delete()<br>                <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&quot;delete_ok&quot;</span>)<br>            <span class="hljs-keyword">except</span> ObjectDoesNotExist:<br>                <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&quot;not_found&quot;</span>)<br>    <span class="hljs-keyword">else</span>:<span class="hljs-comment">#注意代码对齐</span><br>        <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&quot;error&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>以上为本程序实现所需要的核心代码部分，其中我在使用时的django请求方式好像只能用get和post（因为我在网络方面也是小白，具体的咱也不是太清楚，感兴趣的同学可以详细研究下，看其它地博主好像可以用）。因此使用了一个比较蠢的功能解析（即传fun字段来判断要执行哪一个功能）的方式来实现。<br>另外在网络响应时使用的是HttpResponse具体的其它功能读者可以自行google API。</p>
+<ol start="4">
+<li>修改paykeep下的内容：</li>
+</ol>
+<p>（1）修改setting.py的内容：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs python">···<br>DEBUG = <span class="hljs-literal">False</span><br>ALLOWED_HOSTS = [<span class="hljs-string">&#x27;*&#x27;</span>] <span class="hljs-comment"># 可访问的ip</span><br>···<br>INSTALLED_APPS = [<br>    <span class="hljs-string">&#x27;django.contrib.admin&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.contrib.auth&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.contrib.contenttypes&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.contrib.sessions&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.contrib.messages&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.contrib.staticfiles&#x27;</span>,<br>    <span class="hljs-string">&#x27;paykeep_service&#x27;</span>, <span class="hljs-comment"># 项目名字</span><br>]<br><br>MIDDLEWARE = [<br>    <span class="hljs-string">&#x27;django.middleware.security.SecurityMiddleware&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.contrib.sessions.middleware.SessionMiddleware&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.middleware.common.CommonMiddleware&#x27;</span>,<br><span class="hljs-comment">#    &#x27;django.middleware.csrf.CsrfViewMiddleware&#x27;, # 注释掉</span><br>    <span class="hljs-string">&#x27;django.contrib.auth.middleware.AuthenticationMiddleware&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.contrib.messages.middleware.MessageMiddleware&#x27;</span>,<br>    <span class="hljs-string">&#x27;django.middleware.clickjacking.XFrameOptionsMiddleware&#x27;</span>,<br>]<br></code></pre></td></tr></table></figure>
+
+<p>应该只需要做以上的修改就好，具体的可以参考github的源码。</p>
+<p>（2）修改重要的urls.py的内容：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.contrib <span class="hljs-keyword">import</span> admin<br><span class="hljs-keyword">from</span> django.urls <span class="hljs-keyword">import</span> path<br><span class="hljs-keyword">from</span> paykeep_service.views <span class="hljs-keyword">import</span> pay<br><br>urlpatterns = [<br>    path(<span class="hljs-string">&#x27;admin/&#x27;</span>, admin.site.urls),<br>    path(<span class="hljs-string">&#x27;add_pay/&#x27;</span>, pay),<span class="hljs-comment"># ！！！！！！！！！！！！！！！！</span><br>]<br></code></pre></td></tr></table></figure>
+
+<p>这里的 add_pay&#x2F; 为请求方式，pay 为在view.py中定义的方式名，这里一定要对应。如果在view中写了更多的请求功能调用也可以在这里一一列明。</p>
+<ol start="5">
+<li>初始化一下数据库：<br>使用manage.py文件</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">python manage.py migrate<br></code></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>运行:</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">python manage.py runserver 0.0.0.0:10000<br></code></pre></td></tr></table></figure>
+
+<p>允许接入的ip地址（0.0.0.0）表示允许所有的ip接入，10000端口表示开放的端口。如果使用的是云服务器，一定要在安全组里面配置一下哟。</p>
+<hr>
+<p>目前为止，关于后台的搭建已经基本完成，因为我对于后台的了解也不是太多，所以讲的一些东西可能会不太准确，但是操作基本都是正确的。另外推荐大家在搭建好后台后使用postman进行一下响应的测试，看看传入响应的数据后是否会产生预期的效果，如果没用可能需要改一下代码了。防止在后面搭建完app后再反过头来修改后台，浪费时间。本人在写后台时也是经过了很长时间的调试才达到最后的效果，大家要保持耐心哟~提醒一下，如果模型更改了就要按照第5部重新部署一下数据库文件。</p>
+<hr>
+<h1 id="APP的构建（Android）"><a href="#APP的构建（Android）" class="headerlink" title="APP的构建（Android）"></a>APP的构建（Android）</h1><p>在这里假设大家对一些基础的android操作都已经很熟悉了，因此只是写一些与网络通信的介绍，其它的可以去github参照下源代码。按照国际惯例先贴代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 添加支出记录：</span><br> <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addPay</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Pay pay,<span class="hljs-keyword">final</span> <span class="hljs-type">int</span> n)</span>&#123;<br> 		<span class="hljs-comment">//开启网络传输线程------这里可以使用rxjava等热门的框架代替，这里从简</span><br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>            	<span class="hljs-comment">//okhttp 客户端</span><br>                <span class="hljs-type">OkHttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">OkHttpClient</span>();<br>                <span class="hljs-comment">//请求体----添加你需要上传的字段</span><br>                <span class="hljs-type">RequestBody</span> <span class="hljs-variable">requestBody</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">FormBody</span>.Builder()<br>                        .add(<span class="hljs-string">&quot;id&quot;</span>,String.valueOf(pay.getId()))<br>                        .add(<span class="hljs-string">&quot;item_spend&quot;</span>,pay.getName())<br>                        .add(<span class="hljs-string">&quot;money&quot;</span>,String.valueOf(pay.getMoney()))<br>                        .add(<span class="hljs-string">&quot;year&quot;</span>,String.valueOf(pay.getYear()))<br>                        .add(<span class="hljs-string">&quot;month&quot;</span>,String.valueOf(pay.getMonth()))<br>                        .add(<span class="hljs-string">&quot;day&quot;</span>,String.valueOf(pay.getDay()))<br>                        .add(<span class="hljs-string">&quot;isPri&quot;</span>,pay.isPrivate()?<span class="hljs-string">&quot;True&quot;</span>:<span class="hljs-string">&quot;False&quot;</span>)<br>                        .add(<span class="hljs-string">&quot;fun&quot;</span>,String.valueOf(<span class="hljs-number">1</span>))<br>                        .build();<br>                <span class="hljs-comment">// 请求构建  添加你自己的ip地址   另外 请求方式 add_pay 要与urls.py中定义的相同</span><br>                <span class="hljs-type">Request</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Request</span>.Builder()<br>                        .url(<span class="hljs-string">&quot;http://&quot;</span>+ip+<span class="hljs-string">&quot;/add_pay/&quot;</span>)<br>                        .post(requestBody)<br>                        .build();<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-type">Response</span> <span class="hljs-variable">response</span> <span class="hljs-operator">=</span> client.newCall(request).execute();<br>                    <span class="hljs-comment">//请求处理</span><br>                    <span class="hljs-type">String</span> <span class="hljs-variable">rd</span> <span class="hljs-operator">=</span> response.body().string();<br>                    Log.d(TAG, <span class="hljs-string">&quot;get response : &quot;</span>+rd);<br>                    <span class="hljs-keyword">if</span> (rd.isEmpty())&#123;<br>                        runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                            <span class="hljs-meta">@Override</span><br>                            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                                <span class="hljs-keyword">if</span> (n==<span class="hljs-number">1</span>)<br>                                    Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;啊咧咧~下次再上传~&quot;</span>,Toast.LENGTH_SHORT).show();<br>                            &#125;<br>                        &#125;);<br>                    &#125;<span class="hljs-keyword">else</span> &#123;<br>                        <span class="hljs-keyword">if</span> (rd.equals(<span class="hljs-string">&quot;add_ok&quot;</span>))&#123;<br>                            runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                                <span class="hljs-meta">@Override</span><br>                                <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                                    pay.setUploaded(<span class="hljs-literal">true</span>);<br>                                    pay.save();<br>                                    refreshSum();<br>                                    <span class="hljs-keyword">if</span> (n==<span class="hljs-number">1</span>)<br>                                        Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;添加成功&quot;</span>,Toast.LENGTH_SHORT).show();<br>                                &#125;<br>                            &#125;);<br>                        &#125;<span class="hljs-keyword">else</span> &#123;<br>                            runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                                <span class="hljs-meta">@Override</span><br>                                <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                                    <span class="hljs-keyword">if</span>(n==<span class="hljs-number">1</span>)<br>                                        Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;添加失败&quot;</span>,Toast.LENGTH_SHORT).show();<br>                                &#125;<br>                            &#125;);<br>                        &#125;<br>                    &#125;<br>                &#125; <span class="hljs-keyword">catch</span> (IOException e) &#123;<br>                    e.printStackTrace();<br>                    runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                        <span class="hljs-meta">@Override</span><br>                        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                            <span class="hljs-keyword">if</span> (n==<span class="hljs-number">1</span>)<br>                                Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;啊咧咧~下次再上传~&quot;</span>,Toast.LENGTH_SHORT).show();<br>                        &#125;<br>                    &#125;);<br>                &#125;<br>            &#125;<br>        &#125;).start();<br>    &#125;<br>	<span class="hljs-comment">// 删除消费记录 几乎跟上面相同</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">deletePay</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Pay pay,<span class="hljs-keyword">final</span> <span class="hljs-type">int</span> pos)</span>&#123;<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-type">OkHttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">OkHttpClient</span>();<br>                <span class="hljs-type">RequestBody</span> <span class="hljs-variable">requestBody</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">FormBody</span>.Builder()<br>                        .add(<span class="hljs-string">&quot;id&quot;</span>,String.valueOf(pay.getId()))<br>                        .add(<span class="hljs-string">&quot;item_spend&quot;</span>,pay.getName())<br>                        .add(<span class="hljs-string">&quot;money&quot;</span>,String.valueOf(pay.getMoney()))<br>                        .add(<span class="hljs-string">&quot;year&quot;</span>,String.valueOf(pay.getYear()))<br>                        .add(<span class="hljs-string">&quot;month&quot;</span>,String.valueOf(pay.getMonth()))<br>                        .add(<span class="hljs-string">&quot;day&quot;</span>,String.valueOf(pay.getDay()))<br>                        .add(<span class="hljs-string">&quot;isPri&quot;</span>,pay.isPrivate()?<span class="hljs-string">&quot;True&quot;</span>:<span class="hljs-string">&quot;False&quot;</span>)<br>                        .add(<span class="hljs-string">&quot;fun&quot;</span>,String.valueOf(<span class="hljs-number">2</span>))<br>                        .build();<br>                <span class="hljs-type">Request</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Request</span>.Builder()<br>                        .url(<span class="hljs-string">&quot;http://&quot;</span>+ip+<span class="hljs-string">&quot;/add_pay/&quot;</span>)<br>                        .post(requestBody)<br>                        .build();<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-type">Response</span> <span class="hljs-variable">response</span> <span class="hljs-operator">=</span> client.newCall(request).execute();<br>                    <span class="hljs-type">String</span> <span class="hljs-variable">rd</span> <span class="hljs-operator">=</span> response.body().string();<br>                    Log.d(TAG, <span class="hljs-string">&quot;get response : &quot;</span>+rd);<br>                    <span class="hljs-keyword">if</span> (rd.isEmpty())&#123;<br>                        runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                            <span class="hljs-meta">@Override</span><br>                            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                                Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;啊咧咧~电波无法到达~&quot;</span>,Toast.LENGTH_SHORT).show();<br>                            &#125;<br>                        &#125;);<br>                    &#125;<span class="hljs-keyword">else</span> &#123;<br>                        <span class="hljs-keyword">if</span> (rd.equals(<span class="hljs-string">&quot;delete_ok&quot;</span>))&#123;<br>                            runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                                <span class="hljs-meta">@Override</span><br>                                <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                                    pays.remove(pos);<br>                                    adapter.notifyItemRemoved(pos);<br>                                    recyclerView.scrollToPosition(pos);<br>                                    LitePal.delete(Pay.class,pay.getId());<br>                                    refreshSum();<br>                                    Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;消除成功&quot;</span>,Toast.LENGTH_SHORT).show();<br>                                &#125;<br>                            &#125;);<br>                        &#125;<span class="hljs-keyword">else</span> &#123;<br>                            runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                                <span class="hljs-meta">@Override</span><br>                                <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                                    Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;消除失败&quot;</span>,Toast.LENGTH_SHORT).show();<br>                                &#125;<br>                            &#125;);<br>                        &#125;<br>                    &#125;<br>                &#125; <span class="hljs-keyword">catch</span> (IOException e) &#123;<br>                    e.printStackTrace();<br>                    runOnUiThread(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>                        <span class="hljs-meta">@Override</span><br>                        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                            Toast.makeText(MainActivity.<span class="hljs-built_in">this</span>,<span class="hljs-string">&quot;啊咧咧~电波无法到达~&quot;</span>,Toast.LENGTH_SHORT).show();<br>                        &#125;<br>                    &#125;);<br>                &#125;<br>            &#125;<br>        &#125;).start();<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>其它的一些安卓代码，大家有兴趣的话参见github，我在这里就只放核心了，如有问题可在评论区留言。</p>
+<hr>
+<p>目前为止项目基本就结束了！因为写文章时离项目完成有一段时间了，所以大家如果觉得我写的有问题，不清楚的地方都可以在评论区留言，我及时修改<del>（只要我看地到-哈哈牛逼地叉会儿腰）</del></p>
+<blockquote>
+<p>转载请声明出处，谢谢</p>
+</blockquote>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Django服务器与App(Android)客户端的简单实现</div>
+      <div>https://kingqibin.github.io/2022/04/19/Django服务器与App-Android-客户端的简单实现/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Kingqibin</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年4月19日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/04/19/MITJOS-Lab2%E4%B8%AD%E5%85%B3%E4%BA%8Eboot-alloc%E5%88%9D%E5%A7%8B%E5%8C%96%E9%97%AE%E9%A2%98%E5%BC%95%E5%8F%91%E7%9A%84memset%E9%97%AE%E9%A2%98/" title="MITJOS Lab2中关于boot_alloc初始化问题引发的memset问题">
+                        <span class="hidden-mobile">MITJOS Lab2中关于boot_alloc初始化问题引发的memset问题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"eYWNwuX0tJ3k0TcvNJBkDXAA-gzGzoHsz","appKey":"pkqNUo6eK3tLqxIQKHTgFA78","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
